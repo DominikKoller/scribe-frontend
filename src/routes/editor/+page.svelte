@@ -1,3 +1,4 @@
+<!-- src/routes/editor/+page.svelte -->
 <script lang="ts">
     import { onMount } from 'svelte';
     import api from '$lib/api';

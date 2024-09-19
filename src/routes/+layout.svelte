@@ -1,3 +1,4 @@
+<!-- src/routes/+layout.svelte -->
 <script lang="ts">
     import { authToken } from '$lib/stores/auth';
     import { goto } from '$app/navigation';

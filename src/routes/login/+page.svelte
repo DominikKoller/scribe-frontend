@@ -1,3 +1,4 @@
+<!-- src/routes/login/+page.svelte -->
 <script lang="ts">
     import { authToken } from '$lib/stores/auth';
     import api from '$lib/api';
