@@ -1,2 +1,13 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+    import { authToken } from '$lib/stores/auth';
+</script>
+
+<h1>Welcome to your Scribe</h1>
+<p>
+    {#if $authToken}
+        <a href="/editor">My Documents</a>
+    {:else}
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+    {/if}
+</p>
