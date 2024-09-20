@@ -43,69 +43,6 @@
 		updateContent(content);
 	});
 
-	/*
-		const initialComments = $content.comments || [];
-		const commentsPlugin = createCommentsPlugin(initialComments);
-
-		if (initialComments.length > 0) {
-			const maxId = Math.max(
-				...initialComments
-					.map((comment) => parseInt(comment.id.split('-')[1], 10))
-					.filter((n) => !isNaN(n))
-			);
-			commentIdCounter = maxId || 0;
-		}
-
-		const state = EditorState.create({
-			doc: $content.doc ? mySchema.nodeFromJSON($content.doc) : undefined,
-			schema: mySchema,
-			plugins: [
-				history(),
-				keymap({
-					'Mod-b': toggleMark(mySchema.marks.strong),
-					'Mod-i': toggleMark(mySchema.marks.em),
-					'Mod-u': toggleMark(mySchema.marks.underline),
-					'Mod-z': undo,
-					'Mod-y': redo
-				}),
-				keymap(baseKeymap),
-				commentsPlugin
-			]
-		});
-
-		editorView = new EditorView(editorContainer!, {
-			state,
-			dispatchTransaction(transaction) {
-				const newState = editorView!.state.apply(transaction);
-				editorView!.updateState(newState);
-				$content = {
-					doc: newState.doc.toJSON(),
-					comments: commentsPluginKey.getState(newState).comments
-				};
-				updateToolbarState();
-
-				const pluginState = commentsPluginKey.getState(newState);
-
-				// TODO maybe these should be two stores?
-				commentsStore.set({
-					comments: pluginState.comments,
-					activeCommentId: pluginState.activeCommentId
-				});
-
-				// Notify parent component of content change
-				dispatch('change');
-			}
-		});
-
-		$commentsStore = {
-			comments: commentsPluginKey.getState(editorView.state).comments || [],
-			activeCommentId: commentsPluginKey.getState(editorView.state).activeCommentId || null
-		};
-
-		updateToolbarState();
-	});
-	*/
-
 	onDestroy(() => {
 		editorView?.destroy();
 	});
