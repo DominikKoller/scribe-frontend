@@ -13,7 +13,7 @@
 	import { createCommentsPlugin, commentsPluginKey } from './commentsPlugin';
 	import { writable } from 'svelte/store';
 	import Comments from '$lib/Comments.svelte';
-    import type { DocumentContent } from '$lib/types';
+	import type { DocumentContent } from '$lib/types';
 	import { createEventDispatcher } from 'svelte';
 
 	export let content: DocumentContent;
@@ -191,7 +191,12 @@
 </div>
 
 <style>
+	.editor-wrapper {
+		display: flex;
+	}
+
 	.editor {
+		flex: 1; /* Editor takes available space */
 		min-height: 600px;
 		font-size: 16px;
 	}

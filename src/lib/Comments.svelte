@@ -1,3 +1,4 @@
+<!-- src/lib/Comments.svelte -->
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { TextSelection } from 'prosemirror-state';
@@ -39,8 +40,6 @@
 	}
 </script>
 
-// src/lib/Comments.svelte
-
 <div class="comments-sidebar">
 	<h3>Comments</h3>
 	{#each comments as comment}
@@ -58,33 +57,41 @@
 </div>
 
 <style>
-	.comments-sidebar {
-		width: 300px;
-		background: #f9f9f9;
-		border-left: 1px solid #ccc;
-		overflow-y: auto;
-		padding: 10px;
-	}
+    .comments-sidebar {
+        width: 300px;
+        background: #f9f9f9;
+        border-left: 1px solid #ccc;
+        overflow-y: auto;
+        padding: 10px;
+    }
 
-	.comment-item {
-		margin-bottom: 10px;
-		cursor: pointer;
-	}
+    .comment-item {
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: #fff;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+    }
 
-	.comment-item p {
-		margin: 0 0 5px 0;
-	}
+    .comment-item:hover {
+        background-color: #f1f1f1;
+    }
 
-	.comment-item button {
-		padding: 5px 10px;
-		background-color: #dc3545;
-		color: #fff;
-		border: none;
-		border-radius: 5px;
-		cursor: pointer;
-	}
+    .comment-item p {
+        margin: 0 0 5px 0;
+    }
 
-	.comment-item button:hover {
-		background-color: #c82333;
-	}
+    .comment-item button {
+        padding: 5px 10px;
+        background-color: #dc3545;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .comment-item button:hover {
+        background-color: #c82333;
+    }
 </style>
