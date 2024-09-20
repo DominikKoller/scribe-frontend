@@ -16,6 +16,8 @@
 	let documentId = get(page).params.id;
 	let documentData: DocumentData | null = null;
 
+	let isDirty = false;
+
 	onMount(async () => {
 		if (!$authToken) {
 			goto('/login');
@@ -29,28 +31,24 @@
 		}
 	});
 
-	const saveContent = async () => {
+	const save = async () => {
 		try {
 			await api.put(`/documents/${documentId}`, {
 				title: documentData?.title ?? '',
 				content: documentData?.content ?? { doc: null, comments: [] },
 			});
-			alert('Document saved successfully');
+			isDirty = false;
 		} catch (error) {
 			console.error('Error saving document:', error);
 		}
 	};
 
-	const saveTitle = async () => {
-		try {
-			await api.put(`/documents/${documentId}`, {
-				title: documentData?.title ?? '',
-				content: documentData?.content ?? { doc: null, comments: [] },
-			});
-		} catch (error) {
-			console.error('Error saving title:', error);
-		}
-	};
+	function handleContentChange() {
+		isDirty = true;
+	}
+	function handleTitleChange() {
+		isDirty = true;
+	}
 </script>
 
 <Header>
@@ -61,10 +59,12 @@
 				type="text"
 				class="document-title"
 				bind:value={documentData.title}
-				on:blur={saveTitle}
+				on:input={handleTitleChange}
 				placeholder="Untitled Document"
 			/>
-			<button on:click={saveContent}> Save</button>
+			<button on:click={save} class:is-saved={!isDirty}>
+                {isDirty ? 'Save' : 'All changes saved'}
+            </button>
 		{/if}
 	</svelte:fragment>
 </Header>
@@ -72,7 +72,7 @@
 {#if documentData}
 	<div class="editor-page">
 		<div class="editor-container">
-			<Editor bind:content={documentData.content} />
+			<Editor bind:content={documentData.content} on:change={handleContentChange} />
 		</div>
 	</div>
 {:else}
@@ -116,4 +116,13 @@
 	button:hover {
 		background-color: #0056b3;
 	}
+
+	button.is-saved {
+        background-color: grey;
+        cursor: default;
+    }
+
+    button.is-saved:hover {
+        background-color: grey;
+    }
 </style>

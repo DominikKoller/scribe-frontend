@@ -14,11 +14,14 @@
 	import { writable } from 'svelte/store';
 	import Comments from '$lib/Comments.svelte';
     import type { DocumentContent } from '$lib/types';
+	import { createEventDispatcher } from 'svelte';
 
 	export let content: DocumentContent;
 
 	let editorView: EditorView | null = null;
 	let editorContainer: HTMLDivElement | null = null;
+
+	const dispatch = createEventDispatcher();
 
 	const icons = {
 		bold: '𝐁',
@@ -65,6 +68,9 @@
 
 				const pluginState = commentsPluginKey.getState(newState);
 				commentsStore.set(pluginState.comments);
+
+				// Notify parent component of content change
+				dispatch('change');
 			}
 		});
 

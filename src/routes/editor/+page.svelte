@@ -39,7 +39,10 @@
 			}
 			const response = await api.post('/documents', {
 				title: newTitle,
-				content: {}
+				content: {
+                    doc: null,
+                    comments: []
+                }
 			});
 			newTitle = '';
 			goto(`/editor/${response.data._id}`);
