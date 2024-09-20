@@ -12,9 +12,10 @@
 	import type { DocumentData } from '$lib/types';
 	// import jwt_decode from 'jwt-decode';
 
-
 	let documentId = get(page).params.id;
 	let documentData: DocumentData | null = null;
+
+	let editorRef: Editor;
 
 	let isDirty = false;
 
@@ -35,7 +36,7 @@
 		try {
 			await api.put(`/documents/${documentId}`, {
 				title: documentData?.title ?? '',
-				content: documentData?.content ?? { doc: null, comments: [] },
+				content: documentData?.content ?? { doc: null, comments: [] }
 			});
 			isDirty = false;
 		} catch (error) {
@@ -43,17 +44,46 @@
 		}
 	};
 
-	function handleContentChange() {
+	function handleContentChange(event: CustomEvent) {
+		if (!documentData) {
+			documentData = {
+				title: '',
+				content: { doc: null, comments: [] }
+			};
+		}
+		documentData.content = event.detail;
 		isDirty = true;
 	}
+
 	function handleTitleChange() {
 		isDirty = true;
+	}
+
+	async function requestLLMComments() {
+		try {
+			if (isDirty) {
+				await save();
+			}
+			const response = await api.post(`/llm/${documentId}/addComments`);
+			const data = response.data;
+			if (data.success && documentData) {
+				documentData.content.comments = data.comments;
+
+				if (editorRef) {
+					editorRef.updateContent(documentData.content);
+				}
+
+				isDirty = true;
+			}
+		} catch (error) {
+			console.error('Error running LLM:', error);
+		}
 	}
 </script>
 
 <Header>
 	<svelte:fragment slot="header-content">
-        <a href="/editor">Back</a>
+		<a href="/editor">Back</a>
 		{#if documentData}
 			<input
 				type="text"
@@ -63,16 +93,21 @@
 				placeholder="Untitled Document"
 			/>
 			<button on:click={save} class:is-saved={!isDirty}>
-                {isDirty ? 'Save' : 'All changes saved'}
-            </button>
+				{isDirty ? 'Save' : 'All changes saved'}
+			</button>
 		{/if}
 	</svelte:fragment>
 </Header>
 
 {#if documentData}
 	<div class="editor-page">
+		<button on:click={requestLLMComments}>LLM Comment</button>
 		<div class="editor-container">
-			<Editor bind:content={documentData.content} on:change={handleContentChange} />
+			<Editor
+				bind:this={editorRef}
+				content={documentData.content}
+				on:contentChange={handleContentChange}
+			/>
 		</div>
 	</div>
 {:else}
@@ -103,7 +138,7 @@
 		width: 100%;
 	}
 
-    button {
+	button {
 		margin-left: 10px;
 		padding: 5px 10px;
 		background-color: #007bff;
@@ -118,11 +153,11 @@
 	}
 
 	button.is-saved {
-        background-color: grey;
-        cursor: default;
-    }
+		background-color: grey;
+		cursor: default;
+	}
 
-    button.is-saved:hover {
-        background-color: grey;
-    }
+	button.is-saved:hover {
+		background-color: grey;
+	}
 </style>

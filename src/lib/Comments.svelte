@@ -1,4 +1,4 @@
-<!-- src/lib/Comments.svelte -->
+<!-- frontend/src/lib/Comments.svelte -->
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { TextSelection } from 'prosemirror-state';

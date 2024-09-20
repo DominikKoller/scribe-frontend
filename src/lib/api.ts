@@ -1,3 +1,4 @@
+// frontend/src/lib/api.ts
 import axios from 'axios';
 import { authToken } from '$lib/stores/auth';
 

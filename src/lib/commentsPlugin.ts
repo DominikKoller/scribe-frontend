@@ -1,4 +1,4 @@
-// src/lib/commentsPlugin.ts
+// frontend/src/lib/commentsPlugin.ts
 
 import { Plugin, PluginKey, Transaction } from 'prosemirror-state';
 import { Decoration, DecorationSet } from 'prosemirror-view';

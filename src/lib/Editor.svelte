@@ -11,7 +11,7 @@
 	import 'prosemirror-view/style/prosemirror.css';
 
 	import { createCommentsPlugin, commentsPluginKey } from './commentsPlugin';
-	import { writable } from 'svelte/store';
+	import { writable, type Writable } from 'svelte/store';
 	import Comments from '$lib/Comments.svelte';
 	import type { DocumentContent } from '$lib/types';
 	import { createEventDispatcher } from 'svelte';
@@ -37,8 +37,14 @@
 		activeCommentId: null
 	});
 
+	let commentIdCounter = 0;
+
 	onMount(() => {
-		const initialComments = content?.comments || [];
+		updateContent(content);
+	});
+
+	/*
+		const initialComments = $content.comments || [];
 		const commentsPlugin = createCommentsPlugin(initialComments);
 
 		if (initialComments.length > 0) {
@@ -51,7 +57,7 @@
 		}
 
 		const state = EditorState.create({
-			doc: content.doc ? mySchema.nodeFromJSON(content.doc) : undefined,
+			doc: $content.doc ? mySchema.nodeFromJSON($content.doc) : undefined,
 			schema: mySchema,
 			plugins: [
 				history(),
@@ -72,7 +78,7 @@
 			dispatchTransaction(transaction) {
 				const newState = editorView!.state.apply(transaction);
 				editorView!.updateState(newState);
-				content = {
+				$content = {
 					doc: newState.doc.toJSON(),
 					comments: commentsPluginKey.getState(newState).comments
 				};
@@ -91,18 +97,87 @@
 			}
 		});
 
-		// set comments store
-		commentsStore.set({
+		$commentsStore = {
 			comments: commentsPluginKey.getState(editorView.state).comments || [],
-			activeCommentId: commentsPluginKey.getState(editorView.state).activeCommentId || null,
-		});
+			activeCommentId: commentsPluginKey.getState(editorView.state).activeCommentId || null
+		};
 
 		updateToolbarState();
 	});
+	*/
 
 	onDestroy(() => {
 		editorView?.destroy();
 	});
+
+	export function updateContent(newContent: DocumentContent) {
+		const commentsPlugin = createCommentsPlugin(newContent.comments || []);
+
+		// Update comment ID counter based on new comments
+		if (newContent.comments && newContent.comments.length > 0) {
+			const maxId = Math.max(
+				...newContent.comments
+					.map((comment) => parseInt(comment.id.split('-')[1], 10))
+					.filter((n) => !isNaN(n))
+			);
+			commentIdCounter = maxId || 0;
+		}
+
+		const state = EditorState.create({
+			doc: newContent.doc ? mySchema.nodeFromJSON(newContent.doc) : undefined,
+			schema: mySchema,
+			plugins: [
+				history(),
+				keymap({
+					'Mod-b': toggleMark(mySchema.marks.strong),
+					'Mod-i': toggleMark(mySchema.marks.em),
+					'Mod-u': toggleMark(mySchema.marks.underline),
+					'Mod-z': undo,
+					'Mod-y': redo
+				}),
+				keymap(baseKeymap),
+				commentsPlugin
+			]
+		});
+
+		if (!editorView) {
+			// First-time initialization
+			editorView = new EditorView(editorContainer!, {
+				state,
+				dispatchTransaction(transaction) {
+					const newState = editorView!.state.apply(transaction);
+					editorView!.updateState(newState);
+
+					// Notify parent component of content change
+					dispatch('contentChange', {
+						doc: newState.doc.toJSON(),
+						comments: commentsPluginKey.getState(newState).comments
+					});
+
+					updateToolbarState();
+
+					const pluginState = commentsPluginKey.getState(newState);
+
+					commentsStore.set({
+						comments: pluginState.comments,
+						activeCommentId: pluginState.activeCommentId
+					});
+				}
+			});
+		} else {
+			// Update the editor's state with new content
+			editorView.updateState(state);
+		}
+
+		// Update comments store
+		const pluginState = commentsPluginKey.getState(state);
+		commentsStore.set({
+			comments: pluginState.comments,
+			activeCommentId: pluginState.activeCommentId
+		});
+
+		updateToolbarState();
+	}
 
 	// Toolbar Actions
 	const toggleMarkAction = (mark: MarkType) => () => {
@@ -127,7 +202,6 @@
 		}
 	};
 
-	let commentIdCounter = 0;
 	const generateUniqueCommentId = () => {
 		return `comment-${++commentIdCounter}`;
 	};
