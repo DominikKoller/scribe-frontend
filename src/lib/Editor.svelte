@@ -32,7 +32,10 @@
 		comment: '💬'
 	};
 
-	const commentsStore = writable([]);
+	const commentsStore = writable({
+		comments: [],
+		activeCommentId: null
+	});
 
 	onMount(() => {
 		const initialComments = content?.comments || [];
@@ -67,7 +70,12 @@
 				updateToolbarState();
 
 				const pluginState = commentsPluginKey.getState(newState);
-				commentsStore.set(pluginState.comments);
+
+				// TODO maybe these should be two stores?
+				commentsStore.set({
+					comments: pluginState.comments,
+					activeCommentId: pluginState.activeCommentId,
+				});
 
 				// Notify parent component of content change
 				dispatch('change');
@@ -267,5 +275,9 @@
 	:global(.ProseMirror .comment) {
 		background-color: rgba(255, 255, 0, 0.5);
 		cursor: pointer;
+	}
+
+	:global(.ProseMirror .comment.active-comment) {
+		background-color: rgba(173, 216, 230, 0.5);
 	}
 </style>

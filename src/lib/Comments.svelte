@@ -4,15 +4,22 @@
 	import { TextSelection } from 'prosemirror-state';
 	import { commentsPluginKey } from './commentsPlugin';
 	import type { EditorView } from 'prosemirror-view';
-    import type { Comment } from '$lib/types';
+	import type { Comment } from '$lib/types';
+	import type { Readable } from 'svelte/store';
 
 	export let editorView: EditorView;
-	export let commentsStore;
+
+	export let commentsStore: Readable<{
+		comments: Comment[];
+		activeCommentId: string | null;
+	}>;
 
 	let comments: Comment[] = [];
+	let activeCommentId: string | null = null;
 
-	const unsubscribe = commentsStore.subscribe((value: Comment[]) => {
-		comments = value;
+	const unsubscribe = commentsStore.subscribe((value) => {
+		comments = value.comments;
+		activeCommentId = value.activeCommentId;
 	});
 
 	onDestroy(() => {
@@ -23,7 +30,9 @@
 		const { state, dispatch } = editorView;
 		dispatch(
 			state.tr
-				.setSelection(TextSelection.create(state.doc, comment.from, comment.to))
+				// enable if you want the comment text to be selected when clicked
+				// .setSelection(TextSelection.create(state.doc, comment.from, comment.to))
+				.setMeta(commentsPluginKey, { type: 'setActiveComment', id: comment.id })
 				.scrollIntoView()
 		);
 		editorView.focus();
@@ -44,7 +53,7 @@
 	<h3>Comments</h3>
 	{#each comments as comment}
 		<div
-			class="comment-item"
+			class="comment-item {comment.id === activeCommentId ? 'active' : ''}"
 			on:click={() => goToComment(comment)}
 			on:keydown={(e) => e.key === 'Enter' && goToComment(comment)}
 			tabindex="0"
@@ -57,41 +66,45 @@
 </div>
 
 <style>
-    .comments-sidebar {
-        width: 300px;
-        background: #f9f9f9;
-        border-left: 1px solid #ccc;
-        overflow-y: auto;
-        padding: 10px;
-    }
+	.comments-sidebar {
+		width: 300px;
+		background: #f9f9f9;
+		border-left: 1px solid #ccc;
+		overflow-y: auto;
+		padding: 10px;
+	}
 
-    .comment-item {
-        margin-bottom: 10px;
-        padding: 10px;
-        background-color: #fff;
-        border-radius: 6px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
-    }
+	.comment-item {
+		margin-bottom: 10px;
+		padding: 10px;
+		background-color: #fff;
+		border-radius: 6px;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		cursor: pointer;
+	}
 
-    .comment-item:hover {
-        background-color: #f1f1f1;
-    }
+	.comment-item.active {
+		background-color: #d0f0fd;
+	}
 
-    .comment-item p {
-        margin: 0 0 5px 0;
-    }
+	.comment-item:hover {
+		background-color: #f1f1f1;
+	}
 
-    .comment-item button {
-        padding: 5px 10px;
-        background-color: #dc3545;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
+	.comment-item p {
+		margin: 0 0 5px 0;
+	}
 
-    .comment-item button:hover {
-        background-color: #c82333;
-    }
+	.comment-item button {
+		padding: 5px 10px;
+		background-color: #dc3545;
+		color: #fff;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+	}
+
+	.comment-item button:hover {
+		background-color: #c82333;
+	}
 </style>
