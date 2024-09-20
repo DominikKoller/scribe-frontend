@@ -36,7 +36,7 @@
 		const commentsPlugin = createCommentsPlugin(initialComments);
 
 		const state = EditorState.create({
-			doc: content ? mySchema.nodeFromJSON(content) : undefined,
+			doc: content.doc ? mySchema.nodeFromJSON(content.doc) : undefined,
 			schema: mySchema,
 			plugins: [
 				history(),
