@@ -9,12 +9,9 @@
 	import { authToken } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { browser } from '$app/environment';
+	import type { DocumentData } from '$lib/types';
 	// import jwt_decode from 'jwt-decode';
 
-	type DocumentData = {
-		title: string;
-		content: any;
-	};
 
 	let documentId = get(page).params.id;
 	let documentData: DocumentData | null = null;
@@ -36,7 +33,7 @@
 		try {
 			await api.put(`/documents/${documentId}`, {
 				title: documentData?.title ?? '',
-				content: documentData?.content ?? '',
+				content: documentData?.content ?? { doc: null, comments: [] },
 			});
 			alert('Document saved successfully');
 		} catch (error) {
@@ -48,7 +45,7 @@
 		try {
 			await api.put(`/documents/${documentId}`, {
 				title: documentData?.title ?? '',
-				content: documentData?.content ?? ''
+				content: documentData?.content ?? { doc: null, comments: [] },
 			});
 		} catch (error) {
 			console.error('Error saving title:', error);

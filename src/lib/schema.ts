@@ -11,6 +11,22 @@ const underline: MarkSpec = {
     },
   };
 
+  const comment: MarkSpec = {
+    attrs: { id: {} },
+    inclusive: false,
+    parseDOM: [
+      {
+        tag: 'span[data-comment-id]',
+        getAttrs(dom: HTMLElement) {
+          return { id: dom.getAttribute('data-comment-id') };
+        },
+      },
+    ],
+    toDOM(mark) {
+      return ['span', { 'data-comment-id': mark.attrs.id, class: 'comment' }, 0];
+    },
+  };
+
 const nodes = {
   ...basicNodes,
   // Add list nodes
@@ -26,6 +42,7 @@ const nodes = {
 const marks = {
     ...basicMarks,
     underline,
+    comment,
   };
   
   export const mySchema = new Schema({
