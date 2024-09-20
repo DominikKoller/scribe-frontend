@@ -4,6 +4,7 @@
     import api from '$lib/api';
     import { goto } from '$app/navigation';
     import { authToken } from '$lib/stores/auth';
+    import Header from '$lib/Header.svelte';
 
     interface Document {
         _id: string;
@@ -44,15 +45,70 @@
     };
 </script>
 
-<h1>Your Documents</h1>
+<Header />
 
-<input type="text" bind:value={newTitle} placeholder="Document Title" />
-<button on:click={createDocument}>Create Document</button>
+<div class="content-container">
+    <h1>Your Documents</h1>
 
-<ul>
-    {#each documents as document}
-        <li>
-            <a href={`/editor/${document._id}`}>{document.title}</a>
-        </li>
-    {/each}
-</ul>
+    <div class="new-document">
+        <input type="text" bind:value={newTitle} placeholder="Document Title" />
+        <button on:click={createDocument}>Create Document</button>
+    </div>
+
+    <ul>
+        {#each documents as document}
+            <li>
+                <a href={`/editor/${document._id}`}>{document.title}</a>
+            </li>
+        {/each}
+    </ul>
+</div>
+
+<style>
+    .new-document {
+        display: flex;
+        margin-bottom: 20px;
+    }
+
+    .new-document input {
+        flex: 1;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+
+    .new-document button {
+        margin-left: 10px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        background-color: #23a6d5;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .new-document button:hover {
+        background-color: #1b7fab;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    li {
+        margin-bottom: 10px;
+    }
+
+    li a {
+        text-decoration: none;
+        color: #333;
+        font-size: 18px;
+    }
+
+    li a:hover {
+        text-decoration: underline;
+    }
+</style>

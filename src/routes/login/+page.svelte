@@ -19,23 +19,25 @@
     };
 </script>
 
-<h1>Login</h1>
-{#if errorMessage}
-<p style="color: red;">{errorMessage}</p>
-{/if}
+<div class="content-container">
+    <h1>Login</h1>
+    {#if errorMessage}
+        <p class="error-message">{errorMessage}</p>
+    {/if}
 
-<form on:submit|preventDefault={login}>
-    <label>
-        Email:
-        <input type="email" bind:value={email} />
-    </label>
-    <label>
-        Password:
-        <input type="password" bind:value={password} />
-    </label>
-    <button type="submit">Login</button>
-</form>
+    <form on:submit|preventDefault={login}>
+        <label>
+            Email:
+            <input type="email" bind:value={email} required />
+        </label>
+        <label>
+            Password:
+            <input type="password" bind:value={password} required />
+        </label>
+        <button type="submit">Login</button>
+    </form>
 
-<p>
-Don't have an account? <a href="/register">Register here</a>.
-</p>
+    <p>
+        Don't have an account? <a href="/register">Register here</a>.
+    </p>
+</div>
