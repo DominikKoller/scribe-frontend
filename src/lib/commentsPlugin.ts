@@ -87,6 +87,17 @@ export const createCommentsPlugin = (initialComments: Comment[] = []) =>
             }
             return true; // Event handled
           }
+        } else {
+          const pluginState = commentsPluginKey.getState(view.state);
+          if (pluginState.activeCommentId !== null) {
+            view.dispatch(
+              view.state.tr.setMeta(commentsPluginKey, {
+                type: 'setActiveComment',
+                id: null,
+              })
+            );
+            return true; // Event handled. TODO low prio is this good, or do we want the event to bubble up?
+          }
         }
         return false; // Event not handled
       },
