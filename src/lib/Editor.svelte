@@ -41,6 +41,15 @@
 		const initialComments = content?.comments || [];
 		const commentsPlugin = createCommentsPlugin(initialComments);
 
+		if (initialComments.length > 0) {
+			const maxId = Math.max(
+				...initialComments
+					.map((comment) => parseInt(comment.id.split('-')[1], 10))
+					.filter((n) => !isNaN(n))
+			);
+			commentIdCounter = maxId || 0;
+		}
+
 		const state = EditorState.create({
 			doc: content.doc ? mySchema.nodeFromJSON(content.doc) : undefined,
 			schema: mySchema,
