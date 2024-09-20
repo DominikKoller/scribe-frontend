@@ -28,6 +28,12 @@ class CommentState {
       }
     } else if (action?.type === 'setActiveComment') {
       activeCommentId = action.id;
+    } else if (action?.type === 'updateText') {
+      comments = comments.map((comment) =>
+        comment.id === action.id
+          ? { ...comment, text: action.text }
+          : comment
+      );
     }
 
     // Map comment positions

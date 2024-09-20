@@ -1,6 +1,6 @@
 <!-- src/lib/Comments.svelte -->
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { TextSelection } from 'prosemirror-state';
 	import { commentsPluginKey } from './commentsPlugin';
 	import type { EditorView } from 'prosemirror-view';
@@ -20,6 +20,11 @@
 	const unsubscribe = commentsStore.subscribe((value) => {
 		comments = value.comments;
 		activeCommentId = value.activeCommentId;
+	});
+
+	onMount(() => {
+		comments = $commentsStore?.comments || [];
+		activeCommentId = $commentsStore?.activeCommentId;
 	});
 
 	onDestroy(() => {
@@ -47,6 +52,17 @@
 			})
 		);
 	}
+
+	function updateCommentText(commentId: string, newText: string) {
+		const { state, dispatch } = editorView;
+		dispatch(
+			state.tr.setMeta(commentsPluginKey, {
+				type: 'updateText',
+				id: commentId,
+				text: newText
+			})
+		);
+	}
 </script>
 
 <div class="comments-sidebar">
@@ -60,6 +76,12 @@
 			role="button"
 		>
 			<p>{comment.text}</p>
+			<textarea
+				bind:value={comment.text}
+				on:input={(e) =>
+					updateCommentText(comment.id, (e.target as HTMLTextAreaElement).value ?? '')}
+				on:click|stopPropagation
+			></textarea>
 			<button on:click|stopPropagation={() => deleteComment(comment.id)}>Delete</button>
 		</div>
 	{/each}
@@ -106,5 +128,11 @@
 
 	.comment-item button:hover {
 		background-color: #c82333;
+	}
+
+	.comment-item textarea {
+		width: 100%;
+		resize: vertical;
+		margin-bottom: 5px;
 	}
 </style>

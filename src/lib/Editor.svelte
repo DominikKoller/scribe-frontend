@@ -83,12 +83,18 @@
 				// TODO maybe these should be two stores?
 				commentsStore.set({
 					comments: pluginState.comments,
-					activeCommentId: pluginState.activeCommentId,
+					activeCommentId: pluginState.activeCommentId
 				});
 
 				// Notify parent component of content change
 				dispatch('change');
 			}
+		});
+
+		// set comments store
+		commentsStore.set({
+			comments: commentsPluginKey.getState(editorView.state).comments || [],
+			activeCommentId: commentsPluginKey.getState(editorView.state).activeCommentId || null,
 		});
 
 		updateToolbarState();
@@ -132,27 +138,20 @@
 			const { from, to } = state.selection;
 
 			if (from !== to) {
-				const commentText = prompt('Enter your comment:');
-				if (commentText) {
-					const commentId = generateUniqueCommentId();
-					const comment = {
-						id: commentId,
-						from,
-						to,
-						text: commentText
-					};
-
-					dispatch(
-						state.tr.setMeta(commentsPluginKey, {
-							type: 'add',
-							comment
-						})
-					);
-
-					editorView.focus();
-				}
-			} else {
-				alert('Please select some text to comment on.');
+				const commentId = generateUniqueCommentId();
+				const comment = {
+					id: commentId,
+					from,
+					to,
+					text: ''
+				};
+				dispatch(
+					state.tr.setMeta(commentsPluginKey, {
+						type: 'add',
+						comment
+					})
+				);
+				editorView.focus();
 			}
 		}
 	};
