@@ -1,14 +1,21 @@
 <!-- frontend/src/lib/Editor.svelte -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { EditorState } from 'prosemirror-state';
+	import { EditorState, type Transaction } from 'prosemirror-state';
 	import { EditorView } from 'prosemirror-view';
 	import { keymap } from 'prosemirror-keymap';
 	import { baseKeymap, toggleMark } from 'prosemirror-commands';
 	import { history, undo, redo } from 'prosemirror-history';
 	import { mySchema } from './schema';
-	import { type MarkType } from 'prosemirror-model';
+	import { Node, type MarkType } from 'prosemirror-model';
 	import 'prosemirror-view/style/prosemirror.css';
+
+	import { collab, receiveTransaction, sendableSteps, getVersion } from 'prosemirror-collab';
+	import { Step } from 'prosemirror-transform';
+	import io from 'socket.io-client';
+	import { type Socket } from 'socket.io-client';
+	import { jwtDecode } from 'jwt-decode';
+	import { authToken } from '$lib/stores/auth';
 
 	import { createCommentsPlugin, commentsPluginKey } from './commentsPlugin';
 	import { writable, type Writable } from 'svelte/store';
@@ -16,12 +23,13 @@
 	import type { DocumentContent } from '$lib/types';
 	import { createEventDispatcher } from 'svelte';
 
-	export let content: DocumentContent;
+	import { PUBLIC_SOCKET_IO_URL } from '$env/static/public';
+
+	export let documentId: string; // Receive from parent or route
 
 	let editorView: EditorView | null = null;
 	let editorContainer: HTMLDivElement | null = null;
-
-	const dispatch = createEventDispatcher();
+	let socket: Socket;
 
 	const icons = {
 		bold: '𝐁',
@@ -32,87 +40,142 @@
 		comment: '💬'
 	};
 
-	const commentsStore = writable({
+	type Comment = {
+		id: string;
+		from: number;
+		to: number;
+		text: string;
+	};
+
+	const commentsStore = writable<{
+		comments: Comment[];
+		activeCommentId: string | null;
+	}>({
 		comments: [],
 		activeCommentId: null
 	});
 
-	let commentIdCounter = 0;
-
 	onMount(() => {
-		updateContent(content);
+		// Initialize Socket.io
+		socket = io(PUBLIC_SOCKET_IO_URL, {
+			auth: {
+				token: $authToken,
+			},
+		});
+
+		socket.emit('join-document', { documentId, $authToken });
+
+		socket.on('init-document', ({ content, version }) => {
+			const state = EditorState.create({
+				doc: content ? mySchema.nodeFromJSON(content) : undefined,
+				schema: mySchema,
+				plugins: [
+					history(),
+					keymap({
+						'Mod-b': toggleMark(mySchema.marks.strong),
+						'Mod-i': toggleMark(mySchema.marks.em),
+						'Mod-u': toggleMark(mySchema.marks.underline),
+						'Mod-z': undo,
+						'Mod-y': redo
+					}),
+					keymap(baseKeymap),
+					collab({ version }),
+					createCommentsPlugin()
+				]
+			});
+
+			if (!editorView) {
+				editorView = new EditorView(editorContainer!, {
+					state,
+					dispatchTransaction
+				});
+			} else {
+				editorView.updateState(state);
+			}
+
+			updateCommentsFromDoc(state.doc);
+
+			updateToolbarState();
+		});
+
+		socket.on('receive-steps', ({ steps, version, clientIDs }) => {
+			if (!editorView) {
+				console.error('No editor view found to apply steps');
+				return;
+			}
+			const state = editorView.state;
+			const newSteps = steps.map((step: Step) => Step.fromJSON(mySchema, step));
+
+			const oldVersion = getVersion(state);
+			/*
+			const transaction = receiveTransaction(
+				state,
+				newSteps,
+				clientIDs
+			);
+			editorView.updateState(state.apply(transaction));
+			*/
+			editorView.dispatch(
+				receiveTransaction(
+					state,
+					newSteps,
+					clientIDs
+				)
+			)
+			const newVersion = getVersion(editorView.state);
+
+			// TODO THIS HAPPENS AND I DON'T KNOW WHY
+			if(newVersion < oldVersion || newVersion !== version) {
+				console.log("SOMETHING WENT WRONG IN VERSIONING");
+				// print all the steps
+				steps.forEach((step: Step) => {
+					console.log(step);
+				});
+			}
+			
+			updateCommentsFromDoc(editorView.state.doc);
+			updateToolbarState();
+		});
+
+		socket.on('version-mismatch', ({ serverVersion }) => {
+			if (!editorView) {
+				console.error('No editor view found to handle version mismatch');
+				return;
+			}
+			const state = editorView.state;
+			socket.emit('get-steps', { documentId, fromVersion: getVersion(state) });
+		});
+
+		socket.on('error', (message) => {
+			console.error('Socket error:', message);
+		});
 	});
 
 	onDestroy(() => {
 		editorView?.destroy();
+		socket?.disconnect();
 	});
 
-	export function updateContent(newContent: DocumentContent) {
-		const commentsPlugin = createCommentsPlugin(newContent.comments || []);
-
-		// Update comment ID counter based on new comments
-		if (newContent.comments && newContent.comments.length > 0) {
-			const maxId = Math.max(
-				...newContent.comments
-					.map((comment) => parseInt(comment.id.split('-')[1], 10))
-					.filter((n) => !isNaN(n))
-			);
-			commentIdCounter = maxId || 0;
-		}
-
-		const state = EditorState.create({
-			doc: newContent.doc ? mySchema.nodeFromJSON(newContent.doc) : undefined,
-			schema: mySchema,
-			plugins: [
-				history(),
-				keymap({
-					'Mod-b': toggleMark(mySchema.marks.strong),
-					'Mod-i': toggleMark(mySchema.marks.em),
-					'Mod-u': toggleMark(mySchema.marks.underline),
-					'Mod-z': undo,
-					'Mod-y': redo
-				}),
-				keymap(baseKeymap),
-				commentsPlugin
-			]
-		});
-
+	function dispatchTransaction(transaction: Transaction) {
 		if (!editorView) {
-			// First-time initialization
-			editorView = new EditorView(editorContainer!, {
-				state,
-				dispatchTransaction(transaction) {
-					const newState = editorView!.state.apply(transaction);
-					editorView!.updateState(newState);
-
-					// Notify parent component of content change
-					dispatch('contentChange', {
-						doc: newState.doc.toJSON(),
-						comments: commentsPluginKey.getState(newState).comments
-					});
-
-					updateToolbarState();
-
-					const pluginState = commentsPluginKey.getState(newState);
-
-					commentsStore.set({
-						comments: pluginState.comments,
-						activeCommentId: pluginState.activeCommentId
-					});
-				}
-			});
-		} else {
-			// Update the editor's state with new content
-			editorView.updateState(state);
+			console.error('No editor view found to dispatch transaction');
+			return;
 		}
 
-		// Update comments store
-		const pluginState = commentsPluginKey.getState(state);
-		commentsStore.set({
-			comments: pluginState.comments,
-			activeCommentId: pluginState.activeCommentId
-		});
+		const newState = editorView.state.apply(transaction);
+		editorView.updateState(newState);
 
+		const sendable = sendableSteps(newState);
+		if (sendable) {
+			socket.emit('submit-steps', {
+				documentId,
+				version: sendable.version,
+				steps: sendable.steps.map((step) => step.toJSON()),
+				clientID: sendable.clientID 
+			});
+		}
+
+		updateCommentsFromDoc(newState.doc);
 		updateToolbarState();
 	}
 
@@ -140,7 +203,8 @@
 	};
 
 	const generateUniqueCommentId = () => {
-		return `comment-${++commentIdCounter}`;
+		// TODO replace with UUID
+		return `comment-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 	};
 
 	const addCommentAction = () => {
@@ -150,17 +214,8 @@
 
 			if (from !== to) {
 				const commentId = generateUniqueCommentId();
-				const comment = {
-					id: commentId,
-					from,
-					to,
-					text: ''
-				};
 				dispatch(
-					state.tr.setMeta(commentsPluginKey, {
-						type: 'add',
-						comment
-					})
+					state.tr.addMark(from, to, mySchema.marks.comment.create({ id: commentId, text: '' }))
 				);
 				editorView.focus();
 			}
@@ -190,6 +245,37 @@
 			}
 		}
 	};
+
+	function updateCommentsFromDoc(doc: Node) {
+		const comments: Comment[] = [];
+		doc.descendants((node, pos) => {
+			if (node.isText) {
+				const marks = node.marks;
+				marks.forEach((mark) => {
+					if (mark.type === mySchema.marks.comment) {
+						const comment = {
+							id: mark.attrs.id,
+							from: pos,
+							to: pos + (node.text?.length || 0),
+							text: mark.attrs.text || ''
+						};
+						comments.push(comment);
+					}
+				});
+			}
+		});
+
+		if (!editorView) {
+			console.error('No editor view found to update comments');
+			return;
+		}
+		
+		const pluginState = commentsPluginKey.getState(editorView.state);
+		commentsStore.set({
+			comments: comments,
+			activeCommentId: pluginState.activeCommentId
+		});
+	}
 </script>
 
 <div class="editor-toolbar">

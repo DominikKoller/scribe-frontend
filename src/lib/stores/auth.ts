@@ -1,4 +1,4 @@
-// src/lib/stores/auth.ts
+// frontend/src/lib/stores/auth.ts
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 

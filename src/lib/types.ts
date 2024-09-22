@@ -1,4 +1,4 @@
-// src/lib/types.ts
+// frontend/src/lib/types.ts
 
 /** Represents a comment in the document */
 export interface Comment {

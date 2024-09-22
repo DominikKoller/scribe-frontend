@@ -1,10 +1,11 @@
-<!-- src/routes/editor/+page.svelte -->
+<!-- frontend/src/routes/editor/+page.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import api from '$lib/api';
 	import { goto } from '$app/navigation';
 	import { authToken } from '$lib/stores/auth';
 	import Header from '$lib/Header.svelte';
+	import { mySchema } from '$lib/schema';
 
 	// TODO move this to types & find a good way of integrating it to existing types
 	interface Document {
@@ -37,12 +38,12 @@
 			if (!newTitle) {
 				newTitle = 'Untitled Document';
 			}
+			// TODO low prio this should NOT happen on the client side
+			const emptyDoc = mySchema.topNodeType.createAndFill();
+
 			const response = await api.post('/documents', {
 				title: newTitle,
-				content: {
-                    doc: null,
-                    comments: []
-                }
+				content: emptyDoc?.toJSON()
 			});
 			newTitle = '';
 			goto(`/editor/${response.data._id}`);

@@ -1,9 +1,10 @@
 // frontend/src/lib/api.ts
 import axios from 'axios';
 import { authToken } from '$lib/stores/auth';
+import { PUBLIC_API_BASE_URL } from '$env/static/public';
 
 const api = axios.create({
-    baseURL: 'http://localhost:3000/api',
+    baseURL: PUBLIC_API_BASE_URL,
 });
 
 authToken.subscribe((token) => {

@@ -1,64 +1,24 @@
 <!-- src/routes/editor/[id]/+page.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import api from '$lib/api';
 	import { page } from '$app/stores';
-	import { get } from 'svelte/store';
 	import Header from '$lib/Header.svelte';
 	import Editor from '$lib/Editor.svelte';
 	import { authToken } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import { browser } from '$app/environment';
-	import type { DocumentData } from '$lib/types';
-	// import jwt_decode from 'jwt-decode';
 
-	let documentId = get(page).params.id;
-	let documentData: DocumentData | null = null;
-
-	let editorRef: Editor;
-
-	let isDirty = false;
+	let documentId = $page.params.id;
 
 	onMount(async () => {
 		if (!$authToken) {
 			goto('/login');
-		} else {
-			try {
-				const response = await api.get(`/documents/${documentId}`);
-				documentData = response.data;
-			} catch (error) {
-				console.error('Error fetching document:', error);
-			}
 		}
 	});
 
-	const save = async () => {
-		try {
-			await api.put(`/documents/${documentId}`, {
-				title: documentData?.title ?? '',
-				content: documentData?.content ?? { doc: null, comments: [] }
-			});
-			isDirty = false;
-		} catch (error) {
-			console.error('Error saving document:', error);
-		}
-	};
-
-	function handleContentChange(event: CustomEvent) {
-		if (!documentData) {
-			documentData = {
-				title: '',
-				content: { doc: null, comments: [] }
-			};
-		}
-		documentData.content = event.detail;
-		isDirty = true;
-	}
-
-	function handleTitleChange() {
-		isDirty = true;
-	}
-
+	/*
+	// needs to be reworked
+	// we still want to be able to request llm comments
+	// but it will work differently now with shared state editor
 	async function requestLLMComments() {
 		try {
 			if (isDirty) {
@@ -79,40 +39,30 @@
 			console.error('Error running LLM:', error);
 		}
 	}
+	*/
 </script>
 
 <Header>
 	<svelte:fragment slot="header-content">
 		<a href="/editor">Back</a>
-		{#if documentData}
-			<input
-				type="text"
-				class="document-title"
-				bind:value={documentData.title}
-				on:input={handleTitleChange}
-				placeholder="Untitled Document"
-			/>
-			<button on:click={save} class:is-saved={!isDirty}>
-				{isDirty ? 'Save' : 'All changes saved'}
-			</button>
-		{/if}
+		<input
+			type="text"
+			class="document-title"
+			placeholder="Document title not working ATM"
+		/>
 	</svelte:fragment>
 </Header>
 
-{#if documentData}
 	<div class="editor-page">
+		<!-- 
 		<button on:click={requestLLMComments}>LLM Comment</button>
+		-->
 		<div class="editor-container">
 			<Editor
-				bind:this={editorRef}
-				content={documentData.content}
-				on:contentChange={handleContentChange}
+				documentId={documentId}
 			/>
 		</div>
 	</div>
-{:else}
-	<p>Loading document...</p>
-{/if}
 
 <style>
 	.editor-page {
