@@ -14,14 +14,11 @@
 	import { Step } from 'prosemirror-transform';
 	import io from 'socket.io-client';
 	import { type Socket } from 'socket.io-client';
-	import { jwtDecode } from 'jwt-decode';
 	import { authToken } from '$lib/stores/auth';
 
 	import { createCommentsPlugin, commentsPluginKey } from './commentsPlugin';
-	import { writable, type Writable } from 'svelte/store';
+	import { writable } from 'svelte/store';
 	import Comments from '$lib/Comments.svelte';
-	import type { DocumentContent } from '$lib/types';
-	import { createEventDispatcher } from 'svelte';
 
 	import { PUBLIC_SOCKET_IO_URL } from '$env/static/public';
 
@@ -107,14 +104,7 @@
 			const newSteps = steps.map((step: Step) => Step.fromJSON(mySchema, step));
 
 			const oldVersion = getVersion(state);
-			/*
-			const transaction = receiveTransaction(
-				state,
-				newSteps,
-				clientIDs
-			);
-			editorView.updateState(state.apply(transaction));
-			*/
+			
 			editorView.dispatch(
 				receiveTransaction(
 					state,
