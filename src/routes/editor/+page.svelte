@@ -9,7 +9,7 @@
 
 	// TODO move this to types & find a good way of integrating it to existing types
 	interface Document {
-		_id: string;
+		id: string;
 		title: string;
 	}
 
@@ -17,17 +17,19 @@
 	let newTitle = '';
 
 	onMount(async () => {
+		// TODO should this be somewhere else - maybe in a layout file?
 		if (!$authToken) {
 			goto('/login');
 		} else {
-			await fetchDocuments();
+			await fetchDocumentTitles();
 		}
 	});
 
-	const fetchDocuments = async () => {
+	const fetchDocumentTitles = async () => {
 		try {
 			const response = await api.get('/documents');
 			documents = response.data;
+			console.log("fetchDocumentTitles", documents);
 		} catch (error) {
 			console.error('Error fetching documents:', error);
 		}
@@ -38,15 +40,12 @@
 			if (!newTitle) {
 				newTitle = 'Untitled Document';
 			}
-			// TODO low prio this should NOT happen on the client side
-			const emptyDoc = mySchema.topNodeType.createAndFill();
 
 			const response = await api.post('/documents', {
 				title: newTitle,
-				content: emptyDoc?.toJSON()
 			});
 			newTitle = '';
-			goto(`/editor/${response.data._id}`);
+			goto(`/editor/${response.data.documentId}`);
 		} catch (error) {
 			console.error('Error creating document:', error);
 		}
@@ -54,8 +53,9 @@
 
 	const deleteDocument = async (id: string) => {
 		try {
+			console.log("deleteDocument", id);
 			await api.delete(`/documents/${id}`);
-			documents = documents.filter((document) => document._id !== id);
+			documents = documents.filter((document) => document.id !== id);
 		} catch (error) {
 			console.error('Error deleting document:', error);
 		}
@@ -75,8 +75,8 @@
 	<ul>
 		{#each documents as document}
 			<li>
-				<a href={`/editor/${document._id}`}>{document.title}</a>
-				<button on:click={() => deleteDocument(document._id)}>Delete</button>
+				<a href={`/editor/${document.id}`}>{document.title}</a>
+				<button on:click={() => deleteDocument(document.id)}>Delete</button>
 			</li>
 		{/each}
 	</ul>
