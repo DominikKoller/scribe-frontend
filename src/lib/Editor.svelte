@@ -12,12 +12,21 @@
 
 	import { PUBLIC_HOCUSPOCUS_URL } from '$env/static/public';
 
+	import { Comment } from '$lib/extensions/Comment';
+	import { writable, type Writable } from 'svelte/store';
+
+	import { v4 as uuidv4 } from 'uuid';
+	import { Plugin, PluginKey } from 'prosemirror-state';
+	import { Decoration, DecorationSet } from 'prosemirror-view';
+
 	export let documentId: string;
 
 	let editor: Editor;
 	let ydoc: Y.Doc;
 	let provider: HocuspocusProvider;
 	let editorContainer: HTMLDivElement;
+
+	export const commentsStore: Writable<any[]> = writable([]);
 
 	const icons = {
 		bold: '𝐁',
@@ -29,13 +38,19 @@
 	};
 
 	onMount(() => {
-		console.log("documentId in Editor.svelte", documentId);
 		ydoc = new Y.Doc();
 		provider = new HocuspocusProvider({
 			url: PUBLIC_HOCUSPOCUS_URL,
 			name: documentId,
 			document: ydoc,
 			token: $authToken
+		});
+
+		const commentsYArray = ydoc.getArray('comments');
+		$commentsStore = commentsYArray.toJSON();
+
+		commentsYArray.observe((event) => {
+			$commentsStore = commentsYArray.toJSON();
 		});
 
 		editor = new Editor({
@@ -45,7 +60,8 @@
 				Underline,
 				Collaboration.configure({
 					document: ydoc
-				})
+				}),
+				Comment,
 			]
 		});
 
@@ -88,9 +104,36 @@
 		editor.chain().focus().redo().run();
 	};
 
-	// Placeholder for addCommentAction (requires custom implementation)
 	const addCommentAction = () => {
-		// Implement comment functionality here
+		if (!editor) return;
+
+		const { state, view } = editor;
+		const { selection } = state;
+
+		if (selection.empty) {
+			return;
+		}
+
+		const commentText = prompt('Enter your comment');
+		if (!commentText) return;
+
+		const commentId = uuidv4();
+
+		const commentsYArray = ydoc.getArray('comments');
+		commentsYArray.push([
+			{
+				id: commentId,
+				text: commentText,
+				author: 'User', // replace with actual user info
+				timestamp: Date.now(),
+			}
+		]);
+
+		editor
+			.chain()
+			.focus()
+			.setMark('comment', { id: commentId })
+			.run();
 	};
 
 	onDestroy(() => {
@@ -121,11 +164,19 @@
 <div class="editor-wrapper">
 	<div class="editor" bind:this={editorContainer}></div>
 
-	<!--
-	{#if editorView}
-		<Comments {editorView} {commentsStore} />
-	{/if}
-	-->
+	<div class="comments-section">
+		<h3>Comments</h3>
+		{#each $commentsStore as comment}
+		  <!-- svelte-ignore a11y_click_events_have_key_events -->
+		  <!-- svelte-ignore a11y_no_static_element_interactions -->
+		  <div
+			class="comment"
+		  >
+			<strong>{comment.author}</strong> ({new Date(comment.timestamp).toLocaleString()})
+			<p>{comment.text}</p>
+		  </div>
+		{/each}
+	  </div>
 </div>
 
 <style>
