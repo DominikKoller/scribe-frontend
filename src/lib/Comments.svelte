@@ -1,4 +1,7 @@
 <!-- frontend/src/lib/Comments.svelte -->
+
+<!-- THIS IS OLD CODE FROM THE PROSEMIRROR PLUGIN -->
+<!-- KEPT BECAUSE WE MIGHT WANT TO LOOK AT IT STILL, ITS BETTER OPTIMIZED I THINK -->
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { TextSelection } from 'prosemirror-state';

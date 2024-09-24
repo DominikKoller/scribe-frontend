@@ -12,13 +12,15 @@
 
 	import { PUBLIC_HOCUSPOCUS_URL } from '$env/static/public';
 
-	import { Comment } from '$lib/extensions/Comment';
+	import { Comment as CommentExtention } from '$lib/extensions/Comment';
 	import { writable, type Writable } from 'svelte/store';
 
 	import { v4 as uuidv4 } from 'uuid';
 	import { Plugin, PluginKey } from 'prosemirror-state';
 	import { Decoration, DecorationSet } from 'prosemirror-view';
 	import { Node as PNode } from 'prosemirror-model';
+
+	import Comment from '$lib/Comment.svelte';
 
 	export let documentId: string;
 
@@ -32,6 +34,7 @@
 		text: string;
 		author: string;
 		timestamp: number;
+		pending?: boolean;
 	}
 
 	export const commentsStore: Writable<any[]> = writable([]);
@@ -125,7 +128,7 @@
 				Collaboration.configure({
 					document: ydoc
 				}),
-				Comment
+				CommentExtention
 			]
 		});
 
@@ -195,23 +198,19 @@
 			return;
 		}
 
-		const commentText = prompt('Enter your comment');
-		if (!commentText) return;
-
 		const commentId = uuidv4();
 
 		const commentsYArray = ydoc.getArray('comments');
 		commentsYArray.push([
 			{
 				id: commentId,
-				text: commentText,
+				text: '',
 				author: 'User', // replace with actual user info
-				timestamp: Date.now()
+				timestamp: Date.now(),
+				pending: true
 			}
 		]);
 
-		// editor.commands.removeComment(commentId);
-		// editor.chain().focus().setMark('comment', { id: commentId }).run();
 		editor.commands.addComment(commentId);
 	};
 
@@ -221,22 +220,39 @@
 	});
 
 	// Function to highlight text associated with a comment
-	const highlightCommentText = (commentId: string) => {
+	function highlightCommentText(commentId: string) {
 		selectedCommentId = commentId;
 		updateCommentDecorations();
 	};
 
 	// Function to remove a comment
-	const removeComment = (commentId: string) => {
+	function removeComment(commentId: string) {
 		editor.commands.removeComment(commentId);
 
-		// Remove the comment from the Yjs array
 		const commentsYArray: Y.Array<CommentType> = ydoc.getArray('comments');
 		const index = commentsYArray.toArray().findIndex((comment) => comment.id === commentId);
 		if (index !== -1) {
 			commentsYArray.delete(index, 1);
 		}
 	};
+
+	function finalizePendingComment(commentId: string, text: string) {
+		const commentsYArray: Y.Array<CommentType> = ydoc.getArray('comments');
+		const index = commentsYArray
+			.toArray()
+			.findIndex((comment) => comment.id === commentId);
+		if (index !== -1) {
+			const comment = commentsYArray.get(index);
+			commentsYArray.delete(index, 1);
+			commentsYArray.insert(index, [
+				{
+					...comment,
+					text,
+					pending: false
+				}
+			]);
+		}
+	}
 </script>
 
 <div class="editor-toolbar">
@@ -256,23 +272,20 @@
 
 <div class="editor-wrapper">
 	<div class="editor" bind:this={editorContainer}></div>
-</div>
 
-<div class="comments-section">
-	<h3>Comments</h3>
-	{#each $commentsStore as comment}
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div
-			class="comment"
-			class:selected={selectedCommentId === comment.id}
-			on:click={() => highlightCommentText(comment.id)}
-		>
-			<strong>{comment.author}</strong> ({new Date(comment.timestamp).toLocaleString()})
-			<p>{comment.text}</p>
-			<button on:click={() => removeComment(comment.id)}>Delete</button>
-		</div>
-	{/each}
+	<div class="comments-section">
+		<h3>Comments</h3>
+		{#each $commentsStore as comment}
+			<Comment
+				{comment}
+				isSelected={selectedCommentId === comment.id}
+				on:select={(e) => highlightCommentText(e.detail.id)}
+				on:finalize={(e) => finalizePendingComment(e.detail.id, e.detail.text)}
+				on:cancel={(e) => removeComment(e.detail.id)}
+				on:remove={(e) => removeComment(e.detail.id)}
+			/>
+		{/each}
+	</div>
 </div>
 
 <style>
@@ -281,9 +294,20 @@
 	}
 
 	.editor {
-		flex: 1; /* Editor takes available space */
+		flex: 1;
 		min-height: 600px;
 		font-size: 16px;
+		border-right: 1px solid #ccc;
+		padding-right: 10px;
+	}
+
+	.comments-section {
+		width: 300px;
+		padding-left: 10px;
+	}
+
+	.comments-section h3 {
+		margin-top: 0;
 	}
 
 	.editor-toolbar {
