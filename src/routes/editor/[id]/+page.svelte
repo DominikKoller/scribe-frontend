@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import Header from '$lib/Header.svelte';
-	import Editor from '$lib/Editor.svelte';
+	import Editor from '$lib/TipTapEditor/Editor.svelte';
 	import { authToken } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 
