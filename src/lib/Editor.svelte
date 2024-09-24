@@ -133,6 +133,7 @@
 		editor.registerPlugin(commentDecorationPlugin);
 
 		editor.on('comment:select', (commentId) => {
+			console.log('Selected comment:', commentId);
 			selectedCommentId = commentId;
 			updateCommentDecorations();
 		});
@@ -209,7 +210,9 @@
 			}
 		]);
 
-		editor.chain().focus().setMark('comment', { id: commentId }).run();
+		// editor.commands.removeComment(commentId);
+		// editor.chain().focus().setMark('comment', { id: commentId }).run();
+		editor.commands.addComment(commentId);
 	};
 
 	onDestroy(() => {
@@ -221,38 +224,10 @@
 	const highlightCommentText = (commentId: string) => {
 		selectedCommentId = commentId;
 		updateCommentDecorations();
-
-		// Optionally, set the selection to the comment
-		const { state } = editor;
-		const { doc } = state;
-		let from: number | null = null;
-		let to: number | null = null;
-
-		doc.descendants((node, pos) => {
-			if (node.isText) {
-				const marks = node.marks;
-				const commentMark = marks.find(
-					(mark) => mark.type.name === 'comment' && mark.attrs.commentId === commentId
-				);
-				if (commentMark) {
-					from = pos;
-					to = pos + node.nodeSize;
-					return false; // Stop iteration
-				}
-			}
-		});
-
-		if (from !== null && to !== null) {
-			editor.chain().setTextSelection({ from, to }).focus().run();
-		}
 	};
 
 	// Function to remove a comment
 	const removeComment = (commentId: string) => {
-		if (!confirm('Are you sure you want to delete this comment?')) return;
-
-		// Remove the comment mark from the document
-		// editor.chain().focus().unsetMark('comment', { commentId }).run();
 		editor.commands.removeComment(commentId);
 
 		// Remove the comment from the Yjs array
