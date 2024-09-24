@@ -45,37 +45,20 @@
 <Header>
 	<svelte:fragment slot="header-content">
 		<a href="/editor">Back</a>
-		<input
-			type="text"
-			class="document-title"
-			placeholder="Document title not working ATM"
-		/>
+		<input type="text" class="document-title" placeholder="Document title not working ATM" />
 	</svelte:fragment>
 </Header>
 
-	<div class="editor-page">
-		<!-- 
+<div class="editor-page">
+	<!-- 
 		<button on:click={requestLLMComments}>LLM Comment</button>
-		-->
-		<div class="editor-container">
-			<Editor
-				documentId={documentId}
-			/>
-		</div>
-	</div>
+	-->
+	<Editor {documentId} />
+</div>
 
 <style>
 	.editor-page {
 		margin-top: 70px; /* Adjust based on header height */
-		padding: 20px;
-	}
-
-	.editor-container {
-		background-color: #fff;
-		border-radius: 12px;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-		max-width: 1000px;
-		margin: 20px auto;
 		padding: 20px;
 	}
 
@@ -86,28 +69,5 @@
 		background: none;
 		outline: none;
 		width: 100%;
-	}
-
-	button {
-		margin-left: 10px;
-		padding: 5px 10px;
-		background-color: #007bff;
-		color: #fff;
-		border: none;
-		border-radius: 5px;
-		cursor: pointer;
-	}
-
-	button:hover {
-		background-color: #0056b3;
-	}
-
-	button.is-saved {
-		background-color: grey;
-		cursor: default;
-	}
-
-	button.is-saved:hover {
-		background-color: grey;
 	}
 </style>

@@ -79,20 +79,19 @@
 	};
 
 	onMount(() => {
-		console.log('inner onmount');
 		updateToolbarState();
 		editor.on('selectionUpdate', updateToolbarState);
 	});
 </script>
 
 <div class="editor-toolbar">
-	<button class={isBoldActive ? 'active' : ''} on:click={toggleBold}>
+	<button class:active={isBoldActive} on:click={toggleBold} title="Bold">
 		{icons.bold}
 	</button>
-	<button class={isItalicActive ? 'active' : ''} on:click={toggleItalic}>
+	<button class:active={isItalicActive} on:click={toggleItalic} title="Italic">
 		{icons.italic}
 	</button>
-	<button class={isUnderlineActive ? 'active' : ''} on:click={toggleUnderline}>
+	<button class:active={isUnderlineActive} on:click={toggleUnderline} title="Underline">
 		{icons.underline}
 	</button>
 	<button on:click={undoAction}>{icons.undo}</button>
@@ -101,5 +100,27 @@
 </div>
 
 <style>
-	/* Add your toolbar styles here */
+	.editor-toolbar {
+		background-color: #f1f3f4;
+		padding: 4px;
+		border-bottom: 1px solid #e0e0e0;
+	}
+
+	.editor-toolbar button {
+		background: none;
+		border: none;
+		padding: 8px;
+		cursor: pointer;
+		border-radius: 4px;
+		color: #5f6368;
+	}
+
+	.editor-toolbar button:hover {
+		background-color: rgba(60, 64, 67, 0.08);
+	}
+
+	.editor-toolbar button.active {
+		background-color: #e8f0fe;
+		color: #1967d2;
+	}
 </style>

@@ -1,4 +1,4 @@
-<!-- frontend/src/lib/Editor.svelte -->
+<!-- frontend/src/TipTapEditor/Editor.svelte -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { Editor as TipTapEditor, type Extension } from '@tiptap/core';
@@ -66,7 +66,7 @@
 		editor.registerPlugin(createCommentDecorationPlugin(selectedCommentIdStore));
 
 		selectedCommentIdStore.subscribe((_) => {
-			// NOTE this is pretty slow. 
+			// NOTE this is pretty slow.
 			// We should do something more selective to make sure the comment decorations are updated
 			editor?.view.dispatch(editor.view.state.tr);
 		});
@@ -106,54 +106,57 @@
 </div>
 
 <style>
+	.editor-container {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		font-family: 'Roboto', sans-serif;
+
+		width: fit-content;
+		min-width: 100%;
+
+		background-color: white;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	.editor :global(.tiptap) {
+		outline: none; /* Removes the default blue outline */
+		padding: 20px;
+	}
+
 	.editor-wrapper {
 		display: flex;
+		width: fit-content;
+		min-width: 100%;
+		flex: 1;
 	}
 
 	.editor {
-		flex: 1;
-		min-height: 600px;
-		font-size: 16px;
-		border-right: 1px solid #ccc;
-		padding-right: 10px;
+		flex-grow: 1;
+		min-width: 500px;
+		padding: 0;
+
+		overflow-y: auto;
+		background-color: #fff;
+		color: #202124;
+		border-right: 1px solid #222;
 	}
 
-	.comments-section {
-		width: 300px;
-		padding-left: 10px;
+	.editor :global(p) {
+		line-height: 1.6;
+		margin-bottom: 16px;
 	}
 
-	.comments-section h3 {
-		margin-top: 0;
-	}
-
-	.editor-toolbar {
-		display: flex;
-		gap: 8px;
-		margin-bottom: 8px;
-		position: sticky;
-		top: 80px; /* Adjust based on header height */
-		background-color: rgba(255, 255, 255, 0.9);
-		padding: 10px;
-		z-index: 999;
-		border-bottom: 1px solid #ccc;
-	}
-
-	.editor-toolbar button {
-		padding: 6px 10px;
-		font-size: 16px;
-		background: none;
-		border: none;
-		cursor: pointer;
-		border-radius: 4px;
-	}
-
-	.editor-toolbar button.active {
-		background-color: #ddd;
-	}
-
-	.editor-toolbar button:hover {
-		background-color: #eee;
+	.editor :global(h1),
+	.editor :global(h2),
+	.editor :global(h3),
+	.editor :global(h4),
+	.editor :global(h5),
+	.editor :global(h6) {
+		font-weight: 500;
+		color: #202124;
+		margin: 24px 0 16px;
 	}
 
 	:global(.comment-mark) {
