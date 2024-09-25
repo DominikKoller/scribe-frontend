@@ -21,6 +21,7 @@ declare module '@tiptap/core' {
 
 export const CommentExtension = Mark.create<CommentOptions>({
   name: 'comment',
+  excludes: "",
 
   addOptions() {
     return {
