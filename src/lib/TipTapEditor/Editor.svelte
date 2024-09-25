@@ -34,7 +34,6 @@
 	let selectedCommentIdStore: Writable<string | null> = writable(null);
 
 	onMount(() => {
-		console.log('outer onmount');
 		ydoc = new Y.Doc();
 		provider = new HocuspocusProvider({
 			url: PUBLIC_HOCUSPOCUS_URL,

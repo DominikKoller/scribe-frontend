@@ -72,7 +72,6 @@ export const Comment = Mark.create<CommentOptions>({
             addComment:
                 (commentId) =>
                     ({ commands }) => {
-                        console.log('addComment', commentId);
                         return commands.setMark(this.name, { commentId });
                     },
             removeComment:
@@ -120,7 +119,6 @@ export const Comment = Mark.create<CommentOptions>({
                         if (commentMark) {
                             const commentId: string = commentMark.attrs.commentId;
                             // Emit an event
-                            console.log('comment:select', commentMark);
                             this.editor.emit('comment:select', commentId);
                             return true;
                         }
