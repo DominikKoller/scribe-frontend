@@ -53,7 +53,9 @@
 		editor = new TipTapEditor({
 			element: editorContainer,
 			extensions: [
-				StarterKit,
+				StarterKit.configure({
+					history: false
+				}),
 				Underline,
 				...extensions,
 				Collaboration.configure({
