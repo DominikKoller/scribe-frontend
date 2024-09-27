@@ -1,6 +1,6 @@
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
-    import { authToken } from '$lib/stores/auth';
+    import { authToken, anonymousAuthToken } from '$lib/stores/auth';
     import { goto } from '$app/navigation';
     import api from '$lib/api';
 
@@ -9,7 +9,7 @@
     async function anonymousLogin() {
         try {
             const response = await api.post('/users/anonymousLogin');
-            authToken.set(response.data.token);
+            anonymousAuthToken.set(response.data.token);
             goto('/editor');
         } catch (error) {
             errorMessage = 'Could not login anonymously';

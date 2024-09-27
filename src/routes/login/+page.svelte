@@ -1,6 +1,6 @@
 <!-- src/routes/login/+page.svelte -->
 <script lang="ts">
-    import { authToken } from '$lib/stores/auth';
+    import { registeredAuthToken } from '$lib/stores/auth';
     import api from '$lib/api';
     import { goto } from '$app/navigation';
 
@@ -11,7 +11,7 @@
     const login = async () => {
         try {
             const response = await api.post('/users/login', { email, password });
-            authToken.set(response.data.token);
+            $registeredAuthToken = response.data.token;
             goto('/editor');
         } catch (error) {
             errorMessage = 'Invalid email or password';

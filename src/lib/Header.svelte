@@ -1,19 +1,17 @@
 <!-- src/lib/Header.svelte -->
 <script lang="ts">
-	import { authToken } from '$lib/stores/auth';
+	import { registeredAuthToken } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	// import jwt_decode from 'jwt-decode';
-	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
 
 	let username = '';
 
-	const logout = () => {
-		authToken.set(null);
+	function logout() {
+		$registeredAuthToken = null;
 		goto('/login');
 	};
 
-	$: if ($authToken) {
+	$: if ($registeredAuthToken) {
 		// const decoded: any = jwt_decode($authToken);
 		// username = decoded.email || 'User'; // Adjust based on your token's payload
         username = 'User'; // TODO
@@ -27,7 +25,7 @@
 		<slot name="header-content"></slot>
 	</div>
 	<div class="header-right">
-		{#if $authToken}
+		{#if $registeredAuthToken}
 			<span class="user-info">{username}</span>
 			<button on:click={logout}>Logout</button>
 		{:else}

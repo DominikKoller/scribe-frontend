@@ -1,6 +1,6 @@
 <!-- src/routes/register/+page.svelte -->
 <script lang="ts">
-    import { authToken } from '$lib/stores/auth';
+    import { registeredAuthToken } from '$lib/stores/auth';
     import api from '$lib/api';
     import { goto } from '$app/navigation';
 
@@ -8,10 +8,10 @@
     let password = '';
     let errorMessage = '';
     
-    const register = async () => {
+    async function register() {
         try {
             const response = await api.post('/users/register', { email, password });
-            authToken.set(response.data.token);
+            $registeredAuthToken = response.data.token;
             goto('/editor');
         } catch (error) {
             errorMessage = 'Registration failed';
@@ -36,7 +36,6 @@
         </label>
         <button type="submit">Register</button>
     </form>
-
     <p>
         Already have an account? <a href="/login">Login here</a>.
     </p>
