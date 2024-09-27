@@ -6,6 +6,7 @@
 	import Editor from '$lib/TipTapEditor/Editor.svelte';
 	import { authToken } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
+	import api from '$lib/api';
 
 	let documentId = $page.params.id;
 
@@ -15,31 +16,19 @@
 		}
 	});
 
-	/*
-	// needs to be reworked
-	// we still want to be able to request llm comments
-	// but it will work differently now with shared state editor
 	async function requestLLMComments() {
 		try {
-			if (isDirty) {
-				await save();
-			}
 			const response = await api.post(`/llm/${documentId}/addComments`);
 			const data = response.data;
-			if (data.success && documentData) {
-				documentData.content.comments = data.comments;
-
-				if (editorRef) {
-					editorRef.updateContent(documentData.content);
-				}
-
-				isDirty = true;
+			if (data.success) {
+				console.log('Comments added');
+			} else {
+				console.error('Error adding comments');
 			}
 		} catch (error) {
 			console.error('Error running LLM:', error);
 		}
 	}
-	*/
 </script>
 
 <Header>
@@ -50,9 +39,9 @@
 </Header>
 
 <div class="editor-page">
-	<!-- 
+	
 		<button on:click={requestLLMComments}>LLM Comment</button>
-	-->
+	
 	<Editor {documentId} />
 </div>
 
