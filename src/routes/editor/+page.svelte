@@ -1,11 +1,10 @@
 <!-- frontend/src/routes/editor/+page.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import api from '$lib/api';
 	import { goto } from '$app/navigation';
 	import { authToken } from '$lib/stores/auth';
 	import Header from '$lib/Header.svelte';
-	import { mySchema } from '$lib/schema';
+	import { graphQL } from '$lib/graphQL';
 
 	// TODO move this to types & find a good way of integrating it to existing types
 	interface Document {
@@ -27,9 +26,16 @@
 
 	const fetchDocumentTitles = async () => {
 		try {
-			const response = await api.get('/documents');
-			documents = response.data;
-			console.log("fetchDocumentTitles", documents);
+			const query = `
+				query Documents {
+					documents {
+						id
+						title
+					}
+				}
+			`;
+			const result = await graphQL(query);
+			documents = result.documents;
 		} catch (error) {
 			console.error('Error fetching documents:', error);
 		}
@@ -40,12 +46,16 @@
 			if (!newTitle) {
 				newTitle = 'Untitled Document';
 			}
-
-			const response = await api.post('/documents', {
-				title: newTitle,
-			});
+			const mutation = `
+				mutation CreateDocument($title: String!) {
+					createDocument(title: $title) {
+						id
+						}
+				}
+			`;
+			const result = await graphQL(mutation, { title: newTitle });
 			newTitle = '';
-			goto(`/editor/${response.data.documentId}`);
+			goto(`/editor/${result.createDocument.id}`);
 		} catch (error) {
 			console.error('Error creating document:', error);
 		}
@@ -53,8 +63,12 @@
 
 	const deleteDocument = async (id: string) => {
 		try {
-			console.log("deleteDocument", id);
-			await api.delete(`/documents/${id}`);
+			const mutation = `
+				mutation DeleteDocument($id: ID!) {
+					deleteDocument(id: $id)
+				}
+			`;
+			await graphQL(mutation, { id });
 			documents = documents.filter((document) => document.id !== id);
 		} catch (error) {
 			console.error('Error deleting document:', error);

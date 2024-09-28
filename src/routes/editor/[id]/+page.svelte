@@ -6,7 +6,7 @@
 	import Editor from '$lib/TipTapEditor/Editor.svelte';
 	import { authToken } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import api from '$lib/api';
+	import { graphQL } from '$lib/graphQL';
 
 	let documentId = $page.params.id;
 
@@ -18,13 +18,23 @@
 
 	async function requestLLMComments() {
 		try {
-			const response = await api.post(`/llm/${documentId}/addComments`);
+			// const response = await api.post(`/llm/${documentId}/addComments`);
+			const mutation = `
+				mutation RunLLMOnDocument($id: ID!) {
+					runLLMOnDocument(id: $id)
+				}
+			`;
+			const response = await graphQL(mutation, { id: documentId });
+			console.log(response);
+			// TODO handle response
+			/*
 			const data = response.data;
 			if (data.success) {
 				console.log('Comments added');
 			} else {
 				console.error('Error adding comments');
 			}
+			*/
 		} catch (error) {
 			console.error('Error running LLM:', error);
 		}

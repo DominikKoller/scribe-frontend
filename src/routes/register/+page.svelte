@@ -2,8 +2,7 @@
 <script lang="ts">
 	import { registeredAuthToken } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import { gql } from '@apollo/client/core';
-	import client from '$lib/apollo';
+    import { graphQL } from '$lib/graphQL';
 
 	let email = '';
 	let password = '';
@@ -11,15 +10,15 @@
 
 	async function register() {
 		try {
-			const mutation = gql`
+			const mutation = `
 				mutation Register($email: String!, $password: String!) {
 					register(email: $email, password: $password) {
 						token
 					}
 				}
 			`;
-            const result = await client.mutate({ mutation, variables: { email, password } });
-            $registeredAuthToken = result.data.register.token;
+            const result = await graphQL(mutation, { email, password });
+            $registeredAuthToken = result.register.token;
             goto('/editor');
 		} catch (error) {
             console.log(error);

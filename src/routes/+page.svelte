@@ -2,23 +2,21 @@
 <script lang="ts">
 	import { authToken, anonymousAuthToken } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-
-	import client from '$lib/apollo';
-	import { gql } from '@apollo/client/core';
+	import { graphQL } from '$lib/graphQL';
 
 	let errorMessage = '';
 
 	async function anonymousLogin() {
 		try {
-			const mutation = gql`
+			const mutation = `
 				mutation AnonymousLogin {
 					anonymousLogin {
 						token
 					}
 				}
 			`;
-			const result = await client.mutate({ mutation });
-			$anonymousAuthToken = result.data.anonymousLogin.token;
+			const result = await graphQL(mutation);
+			$anonymousAuthToken = result.anonymousLogin.token;
 			goto('/editor');
 		} catch (error) {
 			errorMessage = 'Could not login anonymously';
