@@ -2,7 +2,6 @@
 <script lang="ts">
 	import { authToken, anonymousAuthToken } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import api from '$lib/api';
 
 	import client from '$lib/apollo';
 	import { gql } from '@apollo/client/core';
@@ -11,26 +10,18 @@
 
 	async function anonymousLogin() {
 		try {
-			const response = await api.post('/users/anonymousLogin');
-			anonymousAuthToken.set(response.data.token);
+			const mutation = gql`
+				mutation AnonymousLogin {
+					anonymousLogin {
+						token
+					}
+				}
+			`;
+			const result = await client.mutate({ mutation });
+			$anonymousAuthToken = result.data.anonymousLogin.token;
 			goto('/editor');
 		} catch (error) {
 			errorMessage = 'Could not login anonymously';
-		}
-	}
-
-	async function apolloTest() {
-		const query = gql`
-			query Hello {
-				hello
-			}
-		`;
-
-		try {
-			const result = await client.query({ query });
-			console.log(result);
-		} catch (error) {
-			console.error(error);
 		}
 	}
 </script>
@@ -44,7 +35,6 @@
 			<a href="/login">Login</a>
 			<a href="/register">Register</a>
 			<button on:click={anonymousLogin}>Continue as guest</button>
-            <button on:click={apolloTest}>Apollo Test</button>
 		{/if}
 	</p>
 </div>
