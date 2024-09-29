@@ -7,7 +7,3 @@
   src: url('/fonts/Sansation_Light.ttf'); /* IE9 Compat Modes */
   src: local(''), url('/fonts/Sansation_Light.ttf') format('truetype')
 }
-
-html {
-  background: black;
-}

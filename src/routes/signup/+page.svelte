@@ -1,30 +1,31 @@
-<!-- src/routes/login/+page.svelte -->
+<!-- src/routes/signup/+page.svelte -->
 <script lang="ts">
 	import { registeredAuthToken } from '$lib/stores/auth';
-    import { graphQL } from '$lib/graphQL';
 	import { goto } from '$app/navigation';
-    import Header from '$lib/Header.svelte';
+	import { graphQL } from '$lib/graphQL';
+	import Header from '$lib/Header.svelte';
 
 	let email = '';
 	let password = '';
-	let errorMessage = '';
+	let errorMessage = ''; // TODO do something with this?
 
-	const login = async () => {
+	async function register() {
 		try {
 			const mutation = `
-				mutation Login($email: String!, $password: String!) {
-					login(email: $email, password: $password) {
+				mutation Register($email: String!, $password: String!) {
+					register(email: $email, password: $password) {
 						token
 					}
 				}
 			`;
-            const result = await graphQL(mutation, { email, password });
-			$registeredAuthToken = result.login.token;
+			const result = await graphQL(mutation, { email, password });
+			$registeredAuthToken = result.register.token;
 			goto('/editor');
 		} catch (error) {
-			errorMessage = 'Invalid email or password';
+			console.log(error);
+			errorMessage = 'Registration failed';
 		}
-	};
+	}
 </script>
 
 <!-- my strange solution for a whole page background without setting global css -->
@@ -32,25 +33,25 @@
 <div class="background"></div>
 
 <Header
-	showLogin={false}
-	showSignUp={true}
+	showLogin={true}
+	showSignUp={false}
 	showTry={false}
-	showDontHaveAccountText={true}
-	showAlreadyHaveAccountText={false}
+	showDontHaveAccountText={false}
+	showAlreadyHaveAccountText={true}
 	showUsername={false}
 />
 
 <div class="page-container">
 	<div class="content-container">
 		<div class="left-side">
-			<h1>Log In</h1>
+			<h1>Sign Up</h1>
 		</div>
 		<div class="right-side">
 			{#if errorMessage}
 				<p class="error-message">{errorMessage}</p>
 			{/if}
 
-			<form on:submit|preventDefault={login}>
+			<form on:submit|preventDefault={register}>
 				<div class="input-container">
 					<input type="email" bind:value={email} placeholder="Email" required />
 					<label for="email">Email</label>
@@ -59,7 +60,7 @@
 					<input type="password" bind:value={password} placeholder="Password" required />
 					<label for="password">Password</label>
 				</div>
-				<button type="submit">Log In</button>
+				<button type="submit">Sign Up</button>
 			</form>
 		</div>
 	</div>

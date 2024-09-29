@@ -53,10 +53,10 @@
 </script>
 
 <header class="header">
-	<div class="header-left">
+	<a class="header-left" href="/" >
 		<img src={Logo} alt="Logo" class="logo" />
 		<span class="site-name">Scribe</span>
-	</div>
+	</a>
 	<div class="header-right">
 		{#if $registeredAuthToken && showUsername}
 			<span class="user-info">{username}</span>
@@ -72,7 +72,7 @@
 				<span class="info-text">Don't have an account yet?</span>
 			{/if}
 			{#if showSignUp}
-				<a class="signup-button" href="/register">Sign Up</a>
+				<a class="signup-button" href="/signup">Sign Up</a>
 			{/if}
 			{#if showTry}
 				<button class="try-button" on:click={anonymousLogin}>Try</button>
@@ -87,6 +87,7 @@
 		position: fixed;
 		width: 100%;
 		top: 0;
+		left:0;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
@@ -94,11 +95,16 @@
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		z-index: 1000;
 		box-sizing: border-box;
+		backdrop-filter: blur(20px);
 	}
 
 	.header-left {
 		display: flex;
 		align-items: center;
+	}
+
+	a.header-left {
+		text-decoration: none;
 	}
 
 	.logo {

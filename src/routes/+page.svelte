@@ -36,6 +36,8 @@
 	}
 </script>
 
+<!-- my strange solution for a whole page background without setting global css -->
+<!-- unfortunately when setting whole page css, this is not reliably deleted when navigating to another page -->
 <div class="background"></div>
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -103,7 +105,7 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		background: radial-gradient(100% 50% ellipse at bottom, rgb(52, 0, 116), transparent);
+		background: radial-gradient(100% 50% ellipse at bottom, rgb(52, 0, 116), black);
 		z-index: -1;
 	}
 	.content-container {
