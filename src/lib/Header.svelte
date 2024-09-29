@@ -1,36 +1,82 @@
 <!-- src/lib/Header.svelte -->
+
 <script lang="ts">
 	import { registeredAuthToken } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	// import jwt_decode from 'jwt-decode';
+	import Logo from '$lib/assets/Logo.png';
+	import { graphQL } from '$lib/graphQL';
+	import { anonymousAuthToken } from '$lib/stores/auth';
 
 	let username = '';
+
+	let errorMessage = ''; // do something with this? or make it a button state
+
+	async function anonymousLogin() {
+		try {
+			const mutation = `
+				mutation AnonymousLogin {
+					anonymousLogin {
+						token
+					}
+				}
+			`;
+			const result = await graphQL(mutation);
+			if (result.anonymousLogin.token) {
+				$anonymousAuthToken = result.anonymousLogin.token;
+				goto('/editor');
+			} else {
+				errorMessage = 'Could not login anonymously';
+			}
+		} catch (error) {
+			errorMessage = 'Could not login anonymously';
+		}
+	}
 
 	function logout() {
 		$registeredAuthToken = null;
 		goto('/login');
-	};
+	}
 
 	$: if ($registeredAuthToken) {
-		// const decoded: any = jwt_decode($authToken);
-		// username = decoded.email || 'User'; // Adjust based on your token's payload
-        username = 'User'; // TODO
+		username = 'User'; // TODO: Fetch the username from the store or API
 	} else {
 		username = '';
 	}
+
+	// Control visibility of the buttons and text
+	export let showLogin = true;
+	export let showSignUp = true;
+	export let showTry = true;
+	export let showDontHaveAccountText = false;
+	export let showAlreadyHaveAccountText = false;
+	export let showUsername = false;
 </script>
 
 <header class="header">
 	<div class="header-left">
-		<slot name="header-content"></slot>
+		<img src={Logo} alt="Logo" class="logo" />
+		<span class="site-name">Scribe</span>
 	</div>
 	<div class="header-right">
-		{#if $registeredAuthToken}
+		{#if $registeredAuthToken && showUsername}
 			<span class="user-info">{username}</span>
 			<button on:click={logout}>Logout</button>
 		{:else}
-			<a href="/login">Login</a>
-			<a href="/register">Register</a>
+			{#if showAlreadyHaveAccountText}
+				<span class="info-text">Already have an account?</span>
+			{/if}
+			{#if showLogin}
+				<a class="login-button" href="/login">Log In</a>
+			{/if}
+			{#if showDontHaveAccountText}
+				<span class="info-text">Don't have an account yet?</span>
+			{/if}
+			{#if showSignUp}
+				<a class="signup-button" href="/register">Sign Up</a>
+			{/if}
+			{#if showTry}
+				<button class="try-button" on:click={anonymousLogin}>Try</button>
+			{/if}
 		{/if}
 	</div>
 </header>
@@ -41,13 +87,13 @@
 		position: fixed;
 		width: 100%;
 		top: 0;
-		background-color: rgba(255, 255, 255, 0.95);
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		padding: 10px 20px;
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		z-index: 1000;
+		box-sizing: border-box;
 	}
 
 	.header-left {
@@ -55,9 +101,22 @@
 		align-items: center;
 	}
 
+	.logo {
+		height: 40px;
+		margin-right: 10px;
+	}
+
+	.site-name {
+		font-size: 24px;
+		font-weight: bold;
+		color: white;
+		font-family: 'Julius Sans One', sans-serif;
+	}
+
 	.header-right {
 		display: flex;
 		align-items: center;
+		font-family: 'Sansation', sans-serif;
 	}
 
 	.user-info {
@@ -65,21 +124,78 @@
 		font-weight: bold;
 	}
 
-	.header-right button,
-	.header-right a {
+	/* Button styles */
+	.login-button {
+		background-color: transparent;
+		color: white;
+		text-decoration: none;
 		padding: 6px 12px;
 		border: none;
-		border-radius: 6px;
-		background-color: #23a6d5;
-		color: #fff;
-		font-size: 14px;
 		cursor: pointer;
-		text-decoration: none;
 		margin-left: 10px;
 	}
 
-	.header-right button:hover,
-	.header-right a:hover {
-		background-color: #1b7fab;
+	.signup-button {
+		position: relative;
+		color: white;
+		margin-left: 10px;
+		padding: 8px 14px; /* note in this case you need to add the 2px border to the padding */
+		cursor: pointer;
+		text-decoration: none;
+	}
+
+	/* For why this is necessary see
+	https://dev.to/afif/border-with-gradient-and-radius-387f
+	*/
+	.signup-button::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+
+		border: 2px solid transparent;
+		border-radius: 6px;
+
+		background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0) border-box;
+		-webkit-mask:
+			linear-gradient(#fff 0 0) padding-box,
+			linear-gradient(#fff 0 0);
+		mask:
+			linear-gradient(#fff 0 0) padding-box,
+			linear-gradient(#fff 0 0);
+		-webkit-mask-composite: xor;
+		mask-composite: exclude;
+	}
+
+	.signup-button:hover {
+		background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0) border-box;
+		border-radius: 6px;
+	}
+
+	.try-button {
+		color: white;
+		border: 2px solid white;
+		padding: 6px 12px;
+		border-radius: 6px;
+		text-decoration: none;
+		margin-left: 10px;
+		cursor: pointer;
+		/* reset button styles */
+		background-color: transparent;
+	}
+
+	.info-text {
+		color: white;
+		margin-right: 10px;
+		font-size: 14px;
+	}
+
+	/* Hover effects */
+	.try-button:hover {
+		background-color: white;
+		color: #000;
+	}
+
+	.login-button:hover {
+		text-decoration: underline;
 	}
 </style>
