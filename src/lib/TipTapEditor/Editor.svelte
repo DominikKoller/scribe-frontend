@@ -117,15 +117,13 @@
 
 		width: fit-content;
 		min-width: 100%;
-
-		background-color: white;
-		border-radius: 8px;
 		overflow: hidden;
 	}
 
 	.editor :global(.tiptap) {
 		outline: none; /* Removes the default blue outline */
 		padding: 20px;
+		min-height: 400px; /* important rn so that there is enough space to click into the editor */
 	}
 
 	.editor-wrapper {
@@ -141,8 +139,7 @@
 		padding: 0;
 
 		overflow-y: auto;
-		background-color: #fff;
-		color: #202124;
+		color: #ffffff;
 		border-right: 1px solid #222;
 	}
 
@@ -163,17 +160,11 @@
 	}
 
 	:global(.comment-mark) {
-		background-color: lightgreen;
+		background-color: rgb(23, 102, 23);
 	}
 
 	:global(.comment-mark.selected) {
-		background-color: orange;
-	}
-
-	:global(.comments-section) {
-		margin-top: 20px;
-		border-top: 1px solid #ccc;
-		padding-top: 10px;
+		background-color: rgb(182, 100, 0);
 	}
 
 	:global(.comment) {

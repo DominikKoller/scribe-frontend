@@ -2,8 +2,10 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import type { CommentType } from './Types';
+	import { formatDistanceToNow } from 'date-fns';
 
 	export let comment: CommentType;
+	export let profilePicture: string = '';
 	export let isSelected = false;
 
 	let isEditing = comment.pending || false;
@@ -32,7 +34,21 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="comment" class:selected={isSelected} on:click={handleClick}>
-	<strong>{comment.author}</strong>
+	<div class="comment-header">
+		{#if profilePicture}
+			<div class="profile-picture">
+				<img src={profilePicture} alt="Profile" />
+			</div>
+		{/if}
+		<div class="header-texts">
+			<span class="username">{comment.author}</span>
+			<span class="time">{comment.timestamp
+				? formatDistanceToNow(comment.timestamp, { addSuffix: true })
+				: ''}</span>
+		</div>
+		<button class="delete-button" on:click|stopPropagation={handleRemove}> Delete </button>
+	</div>
+
 	{#if isEditing}
 		<textarea bind:value={editText} class="comment-input"></textarea>
 		<div class="comment-buttons">
@@ -46,19 +62,58 @@
 			</button>
 		</div>
 	{:else}
-		<p>{comment.text}</p>
-		<button class="delete-button" on:click|stopPropagation={handleRemove}> Delete </button>
+	<div class="comment-body">
+		{comment.text}
+	</div>
 	{/if}
 </div>
 
 <style>
 	.comment {
-		border-radius: 8px;
-		box-shadow: 0 2px 8px rgba(60, 64, 67, 0.15);
-		padding: 12px;
-		margin-bottom: 10px;
-		background-color: #fff;
+		background-color: rgb(219, 223, 230);
+		border-radius: 10px;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		padding: 15px;
+		max-width: 200px;
+		margin: 0px auto;
+		font-family: 'Sansation', sans-serif;
+		transition:
+			transform 0.2s ease,
+			background-color 0.2s ease;
 		position: relative;
+	}
+
+	.comment-header {
+		display: flex;
+		align-items: center;
+		margin-bottom: 10px;
+	}
+	.profile-picture {
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		margin-right: 10px;
+	}
+	.profile-picture img {
+		width: 100%;
+	}
+
+	.header-texts {
+		display: flex;
+		flex-direction: column;
+	}
+	.username {
+		font-weight: bold;
+		font-size: 20px;
+	}
+	.time {
+		font-size: 16px;
+		color: #666;
+	}
+	.comment-body {
+		font-size: 16px;
+		line-height: 1.5;
+		color: #333;
 	}
 
 	.comment-input {
@@ -111,6 +166,7 @@
 	}
 
 	.comment.selected {
-		border: 1px solid #1a73e8;
+		background-color: rgb(255, 255, 255);
+		transform: scale(1.1) translateX(-10px);
 	}
 </style>

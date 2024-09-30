@@ -63,7 +63,6 @@
 	}
 </script>
 
-<!-- TODO back button -->
 <Header
 	showLogin={$registeredAuthToken === null}
 	showSignUp={$registeredAuthToken === null}
@@ -100,8 +99,7 @@
 	}
 
 	.editor-page {
-		margin-top: 70px; /* Adjust based on header height */
-		padding: 20px;
+		margin-top: 100px; /* Adjust based on header height */
 	}
 
 	.toolbar {

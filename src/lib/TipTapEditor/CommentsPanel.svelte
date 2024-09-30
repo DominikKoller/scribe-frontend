@@ -58,8 +58,10 @@
 		width: 320px;
         flex-shrink: 0;
 		padding: 16px;
-		background-color: #f9fafb;
-		border-left: 1px solid #e0e0e0;
+		border-left: 1px solid #a2a2a2;
 		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
 	}
 </style>
