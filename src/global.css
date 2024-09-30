@@ -3,7 +3,32 @@
 @font-face {
   font-family: 'Sansation';
   font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/Sansation_Regular.ttf'); /* IE9 Compat Modes */
+  src: local(''), url('/fonts/Sansation_Regular.ttf') format('truetype')
+}
+
+@font-face {
+  font-family: 'Sansation';
+  font-style: normal;
   font-weight: 300;
   src: url('/fonts/Sansation_Light.ttf'); /* IE9 Compat Modes */
   src: local(''), url('/fonts/Sansation_Light.ttf') format('truetype')
+}
+
+@font-face {
+  font-family: 'Sansation';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/fonts/Sansation_Bold.ttf'); /* IE9 Compat Modes */
+  src: local(''), url('/fonts/Sansation_Bold.ttf') format('truetype')
+}
+
+body {
+  font-family: 'Sansation', sans-serif;
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Julius Sans One', sans-serif; /* imported by google fonts in app.html */
 }

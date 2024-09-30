@@ -1,22 +1,36 @@
-<!-- frontend/src/routes/editor/+page.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { authToken } from '$lib/stores/auth';
 	import Header from '$lib/Header.svelte';
 	import { graphQL } from '$lib/graphQL';
+	import { registeredAuthToken } from '$lib/stores/auth';
+	import TrashIcon from '$lib/assets/Delete Icon.svg';
+	import DocumentIcon from '$lib/assets/Document Icon.svg';
+	import { DataHandler, Datatable } from '@vincjo/datatables';
+	import Th from './Th.svelte';
+	import { formatDistanceToNow } from 'date-fns';
 
-	// TODO move this to types & find a good way of integrating it to existing types
 	interface Document {
 		id: string;
 		title: string;
+		createdAt: Date | undefined;
+		updatedAt: Date | undefined;
 	}
 
 	let documents: Document[] = [];
 	let newTitle = '';
+	let handler = new DataHandler<Document>([], { rowsPerPage: 10 });
+	let showDeletePopup = false;
+	let documentToDelete: Document | null = null;
+	const rows = handler.getRows();
+
+	$: if (documents.length) {
+		handler.setRows(documents);
+		handler.sort('updatedAt', 'desc');
+	}
 
 	onMount(async () => {
-		// TODO should this be somewhere else - maybe in a layout file?
 		if (!$authToken) {
 			goto('/login');
 		} else {
@@ -27,33 +41,41 @@
 	const fetchDocumentTitles = async () => {
 		try {
 			const query = `
-				query Documents {
-					documents {
-						id
-						title
-					}
-				}
-			`;
+                query Documents {
+                    documents {
+                        id
+                        title
+                        createdAt
+                        updatedAt
+                    }
+                }
+            `;
 			const result = await graphQL(query);
-			documents = result.documents;
+			documents = result.documents.map((document: any) => ({
+				...document,
+				createdAt: isValidDate(document.createdAt) ? new Date(document.createdAt) : undefined,
+				updatedAt: isValidDate(document.updatedAt) ? new Date(document.updatedAt) : undefined
+			}));
+
+			function isValidDate(dateString: string): boolean {
+				const date = new Date(dateString);
+				return !isNaN(date.getTime());
+			}
 		} catch (error) {
 			console.error('Error fetching documents:', error);
 		}
 	};
 
-	const createDocument = async () => {
+	const newDocument = async () => {
 		try {
-			if (!newTitle) {
-				newTitle = 'Untitled Document';
-			}
 			const mutation = `
-				mutation CreateDocument($title: String!) {
-					createDocument(title: $title) {
-						id
-						}
-				}
-			`;
-			const result = await graphQL(mutation, { title: newTitle });
+                mutation CreateDocument($title: String!) {
+                    createDocument(title: $title) {
+                        id
+                    }
+                }
+            `;
+			const result = await graphQL(mutation, { title: 'Untitled Document' });
 			newTitle = '';
 			goto(`/editor/${result.createDocument.id}`);
 		} catch (error) {
@@ -61,102 +83,282 @@
 		}
 	};
 
-	const deleteDocument = async (id: string) => {
-		try {
-			const mutation = `
-				mutation DeleteDocument($id: ID!) {
-					deleteDocument(id: $id)
-				}
-			`;
-			await graphQL(mutation, { id });
-			documents = documents.filter((document) => document.id !== id);
-		} catch (error) {
-			console.error('Error deleting document:', error);
+	const confirmDeleteDocument = (document: Document) => {
+		documentToDelete = document;
+		showDeletePopup = true;
+	};
+
+	const cancelDelete = () => {
+		showDeletePopup = false;
+		documentToDelete = null;
+	};
+
+	const deleteDocument = async () => {
+		if (documentToDelete) {
+			try {
+				const mutation = `
+                    mutation DeleteDocument($id: ID!) {
+                        deleteDocument(id: $id)
+                    }
+                `;
+				await graphQL(mutation, { id: documentToDelete.id });
+				documents = documents.filter((document) => document.id !== documentToDelete!.id);
+				showDeletePopup = false;
+				documentToDelete = null;
+			} catch (error) {
+				console.error('Error deleting document:', error);
+			}
 		}
 	};
 </script>
 
-<Header />
+<Header
+	showLogin={$registeredAuthToken === null}
+	showSignUp={$registeredAuthToken === null}
+	showTry={false}
+	showDontHaveAccountText={true}
+	showAlreadyHaveAccountText={false}
+	showUsername={$registeredAuthToken !== null}
+/>
+
+<div class="background"></div>
 
 <div class="content-container">
-	<h1>Your Documents</h1>
-
-	<div class="new-document">
-		<input type="text" bind:value={newTitle} placeholder="Document Title" />
-		<button on:click={createDocument}>Create Document</button>
+	<div class="title">
+		<h1>Your Documents</h1>
+		<button class="new-document-button" on:click={newDocument} aria-labelledby="New Document">
+			<svg
+				viewBox="0 0 40 40"
+				width="100%"
+				height="100%"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+			>
+				<circle cx="20" cy="20" r="19" stroke="white" />
+				<line x1="20" y1="10" x2="20" y2="30" stroke="white" />
+				<line x1="10" y1="20" x2="30" y2="20" stroke="white" />
+			</svg>
+		</button>
 	</div>
 
-	<ul>
-		{#each documents as document}
-			<li>
-				<a href={`/editor/${document.id}`}>{document.title}</a>
-				<button on:click={() => deleteDocument(document.id)}>Delete</button>
-			</li>
-		{/each}
-	</ul>
+	<div class="documents-list">
+		<Datatable {handler} search={false} rowsPerPage={false} rowCount={false} pagination={false}>
+			<table>
+				<thead>
+					<tr>
+						<Th {handler} orderBy="title">Name</Th>
+						<Th {handler} orderBy="updatedAt">Modified</Th>
+						<Th {handler} orderBy="createdAt">Created</Th>
+						<Th {handler}></Th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each $rows as document (document.id)}
+						<tr class="document-row">
+							<td on:click={() => goto(`/editor/${document.id}`)}>
+								<img src={DocumentIcon} alt="Document Icon" class="document-icon" />
+								{document.title}
+							</td>
+							<td on:click={() => goto(`/editor/${document.id}`)}>
+								{document.updatedAt
+									? formatDistanceToNow(document.updatedAt, { addSuffix: true })
+									: ''}
+							</td>
+							<td on:click={() => goto(`/editor/${document.id}`)}>
+								{document.createdAt
+									? formatDistanceToNow(document.createdAt, { addSuffix: true })
+									: ''}
+							</td>
+							<td>
+								<button
+									on:click|stopPropagation={() => confirmDeleteDocument(document)}
+									class="trash-icon"
+									aria-labelledby="Delete Document"
+								>
+									<img src={TrashIcon} alt="Delete" />
+								</button>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</Datatable>
+	</div>
+
+	{#if showDeletePopup}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="popup-overlay" on:click={cancelDelete}>
+			<div class="delete-popup" on:click|stopPropagation>
+				<p>Are you sure you want to delete this document?</p>
+				<button class="delete-button" on:click={deleteDocument}>Delete</button>
+				<button on:click={cancelDelete}>Cancel</button>
+			</div>
+		</div>
+	{/if}
 </div>
 
 <style>
-	.new-document {
-		display: flex;
-		margin-bottom: 20px;
+	.background {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: #1f1f1f;
+		z-index: -1;
 	}
 
-	.new-document input {
-		flex: 1;
-		padding: 10px;
-		border-radius: 6px;
-		border: 1px solid #ccc;
-		font-size: 16px;
+	.content-container {
+		margin-top: 70px;
+		padding: 20px;
+		color: #d6d6d6;
+		font-family: 'Sansation', sans-serif;
 	}
 
-	.new-document button {
-		margin-left: 10px;
-		padding: 10px 20px;
-		border: none;
-		border-radius: 6px;
-		background-color: #23a6d5;
-		color: #fff;
-		font-size: 16px;
-		cursor: pointer;
-	}
-
-	.new-document button:hover {
-		background-color: #1b7fab;
-	}
-
-	ul {
-		list-style-type: none;
-		padding: 0;
-	}
-
-	ul li {
+	.title {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		margin-bottom: 10px;
 	}
 
-	ul li a {
-		text-decoration: none;
-		color: #333;
-		font-size: 18px;
+	.title h1 {
+		margin: 0;
 	}
 
-	ul li a:hover {
-		text-decoration: underline;
-	}
-
-	ul li button {
-		padding: 5px 10px;
-		background-color: #dc3545;
-		color: #fff;
+	.new-document-button {
+		background: transparent;
+		border-radius: 50%;
+		width: 40px;
+		height: 40px;
 		border: none;
-		border-radius: 5px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: background 0.3s;
+		padding: 0;
+	}
+
+	.new-document-button:hover {
+		background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0);
+	}
+
+	.documents-list {
+		margin-top: 20px;
+		background: #2a2a2a;
+		border-radius: 12px;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		overflow: hidden;
+	}
+
+	table {
+		width: 100%;
+		border-collapse: separate;
+		border-spacing: 0;
+		color: #d6d6d6;
+
+		padding-left: 15px;
+		padding-right: 15px;
+		padding-bottom: 5px;
+	}
+
+	thead {
+		background: #2a2a2a;
+	}
+
+	tbody td {
+		padding: 10px;
+		border-bottom: 1px solid #3a3a3a;
 		cursor: pointer;
 	}
 
-	ul li button:hover {
-		background-color: #c82333;
+	tbody tr {
+		transition: background 0.2s;
+	}
+
+	tbody tr:hover {
+		background: #3a3a3a;
+	}
+
+	.document-icon {
+		width: 24px;
+		vertical-align: middle;
+		margin-right: 8px;
+	}
+
+	.trash-icon {
+		width: 20px;
+		opacity: 0;
+		transition: opacity 0.2s;
+		cursor: pointer;
+
+		/* reset button styles */
+		background: none;
+		border: none;
+		padding: 0;
+	}
+
+	tbody tr:hover .trash-icon {
+		opacity: 1;
+	}
+
+	.trash-icon:hover {
+		filter: invert(31%) sepia(86%) saturate(5940%) hue-rotate(357deg) brightness(103%)
+			contrast(106%);
+	}
+
+	.popup-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 100;
+	}
+
+	.delete-popup {
+		background: #fff;
+		padding: 20px;
+		border-radius: 8px;
+		color: #000;
+		max-width: 300px;
+		text-align: center;
+	}
+
+	.delete-popup p {
+		margin-bottom: 20px;
+	}
+
+	.delete-popup button {
+		margin: 5px;
+		padding: 10px 20px;
+		border: none;
+		cursor: pointer;
+		border-radius: 4px;
+	}
+
+	.delete-button {
+		background: #ff4d4d;
+		color: #fff;
+	}
+
+	.delete-button:hover {
+		background: #ff1a1a;
+	}
+
+	.delete-popup button:hover:not(.delete-button) {
+		background: #f0f0f0;
+	}
+
+	/* TODO minor this kind of thing could be avoided if we built our own Datatable component */
+	/* See https://vincjo.fr/datatables/examples/basic */
+	.documents-list :global(footer) {
+		border-top: none;
 	}
 </style>

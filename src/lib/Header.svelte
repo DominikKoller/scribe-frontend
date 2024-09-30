@@ -60,7 +60,7 @@
 	<div class="header-right">
 		{#if $registeredAuthToken && showUsername}
 			<span class="user-info">{username}</span>
-			<button on:click={logout}>Logout</button>
+			<button class="logout-button" on:click={logout}>Logout</button>
 		{:else}
 			{#if showAlreadyHaveAccountText}
 				<span class="info-text">Already have an account?</span>
@@ -128,6 +128,7 @@
 	.user-info {
 		margin-right: 20px;
 		font-weight: bold;
+		color: white;
 	}
 
 	/* Button styles */
@@ -139,6 +140,24 @@
 		border: none;
 		cursor: pointer;
 		margin-left: 10px;
+	}
+
+	.login-button:hover {
+		text-decoration: underline;
+	}
+
+	.logout-button {
+		background-color: transparent;
+		color: white;
+		text-decoration: none;
+		padding: 6px 12px;
+		border: none;
+		cursor: pointer;
+		margin-left: 10px;
+	}
+
+	.logout-button:hover {
+		text-decoration: underline;
 	}
 
 	.signup-button {
@@ -195,13 +214,8 @@
 		font-size: 14px;
 	}
 
-	/* Hover effects */
 	.try-button:hover {
 		background-color: white;
 		color: #000;
-	}
-
-	.login-button:hover {
-		text-decoration: underline;
 	}
 </style>
