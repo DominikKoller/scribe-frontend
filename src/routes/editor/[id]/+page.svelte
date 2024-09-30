@@ -9,9 +9,10 @@
 	import { graphQL } from '$lib/graphQL';
 	import { registeredAuthToken } from '$lib/stores/auth';
 	import Toolbar from '$lib/TipTapEditor/Toolbar.svelte';
-	import BackIcon from '$lib/assets/MaterialSymbolsArrowCircleLeftOutlineRounded.svg'
-	import LLMButtonIcon from '$lib/assets/MaterialSymbolsAutoAwesomeOutline.svg'
-	import LLMButtonPendingIcon from '$lib/assets/MaterialSymbolsPendingOutline.svg'
+	import BackIcon from '$lib/assets/MaterialSymbolsArrowCircleLeftOutlineRounded.svg';
+	import LLMButtonIcon from '$lib/assets/MaterialSymbolsAutoAwesomeOutline.svg';
+	import LLMButtonPendingIcon from '$lib/assets/MaterialSymbolsPendingOutline.svg';
+	import { writable } from 'svelte/store';
 
 	let documentId = $page.params.id;
 
@@ -22,6 +23,7 @@
 	});
 
 	let isRequestingLLMComments = false;
+	let inputElement: HTMLInputElement;
 
 	async function requestLLMComments() {
 		if (isRequestingLLMComments) {
@@ -58,8 +60,19 @@
 
 	let editor: Editor;
 
+	let documentNameStore = writable('');
+
 	function handleBack() {
 		goto('/editor');
+	}
+
+	function handleDocumentNameChange(event: Event) {
+		console.log("name change!");
+		const input = event.target as HTMLInputElement;
+		if (!input) {
+			return;
+		}
+		$documentNameStore = input.value;
 	}
 </script>
 
@@ -67,24 +80,41 @@
 	showLogin={$registeredAuthToken === null}
 	showSignUp={$registeredAuthToken === null}
 	showTry={false}
-	showDontHaveAccountText={true}
+	showDontHaveAccountText={false}
 	showAlreadyHaveAccountText={false}
 	showUsername={$registeredAuthToken !== null}
 >
-<div slot="top-left" class="toolbar">
-	<button class="back-button" on:click={handleBack} aria-labelledby="Back">
-		<img src={BackIcon} alt="Back" />
-	</button>
-	<Toolbar {editor} />
-	<button class="request-llm-comments-button" on:click={requestLLMComments} aria-labelledby="New Document">
-		<img src={isRequestingLLMComments ? LLMButtonPendingIcon : LLMButtonIcon} alt="Ask For Comments!" />
-	</button>
-</div>
+	<div slot="top-left" class="toolbar">
+		<button class="back-button" on:click={handleBack} aria-labelledby="Back">
+			<img src={BackIcon} alt="Back" />
+		</button>
+
+		<input
+			type="text"
+			placeholder="Document Name"
+			class="document-title"
+			on:input={handleDocumentNameChange}
+			bind:this={inputElement}
+			value={$documentNameStore}
+		/>
+
+		<Toolbar {editor} />
+		<button
+			class="request-llm-comments-button"
+			on:click={requestLLMComments}
+			aria-labelledby="New Document"
+		>
+			<img
+				src={isRequestingLLMComments ? LLMButtonPendingIcon : LLMButtonIcon}
+				alt="Ask For Comments!"
+			/>
+		</button>
+	</div>
 </Header>
 
 <div class="background"></div>
 <div class="editor-page">
-	<Editor {documentId} bind:this={editor}></Editor>
+	<Editor {documentId} bind:this={editor} nameStore={documentNameStore} ></Editor>
 </div>
 
 <style>
@@ -151,6 +181,6 @@
 		border: none;
 		background: none;
 		outline: none;
-		width: 100%;
+		color: white;
 	}
 </style>

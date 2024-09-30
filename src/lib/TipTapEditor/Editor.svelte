@@ -17,12 +17,15 @@
 	import Toolbar from '$lib/TipTapEditor/Toolbar.svelte';
 	import CommentsPanel from '$lib/TipTapEditor/CommentsPanel.svelte';
 
-	import { writable, type Writable } from 'svelte/store';
+	import { writable, type Writable, readable, type Readable } from 'svelte/store';
 	import type { CommentType } from './Types';
+	import { connectStringStoreToYText } from '$lib/utils/yutils';
 
 	export let documentId: string;
 	export let extensions: Extension[] = [];
 	export let commentsStore: Writable<any[]> = writable([]);
+
+	export let nameStore: Writable<string> = writable('');
 
 	let editor: TipTapEditor | null;
 	let editorContainer: HTMLDivElement;
@@ -48,6 +51,9 @@
 		commentsYArray.observe((event) => {
 			$commentsStore = commentsYArray.toJSON();
 		});
+
+		$nameStore = ydoc.getText('name').toString();
+		connectStringStoreToYText(nameStore, ydoc.getText('name'));
 
 		editor = new TipTapEditor({
 			element: editorContainer,
