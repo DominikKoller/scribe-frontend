@@ -1,13 +1,16 @@
 <!-- src/lib/components/Toolbar.svelte -->
 <script lang="ts">
-	import { Editor as TipTapEditor } from '@tiptap/core';
-	import { onMount } from 'svelte';
+	// import { Editor as TipTapEditor } from '@tiptap/core';
+	import { onMount, tick } from 'svelte';
 	import { v4 as uuidv4 } from 'uuid';
 	import { Array as YArray } from 'yjs';
 	import type { CommentType } from './Types';
+	import Editor from './Editor.svelte';
 
-	export let editor: TipTapEditor;
-	export let commentsYArray: YArray<CommentType>;
+	// TODO the way the Editor is passed here & we access its TipTapEditor etc from here is very tightly coupled difficult to understand & hard to maintain
+	// THINK ABOUT THIS COUPLING
+	// The current way is just a result of how this grew
+	export let editor: Editor;
 
 	let isBoldActive = false;
 	let isItalicActive = false;
@@ -23,40 +26,42 @@
 	};
 
 	const updateToolbarState = () => {
-		if (editor) {
-			isBoldActive = editor.isActive('bold');
-			isItalicActive = editor.isActive('italic');
-			isUnderlineActive = editor.isActive('underline');
+		const tipTapEditor = editor?.getTipTapEditor();
+		if (tipTapEditor) {
+			isBoldActive = tipTapEditor.isActive('bold');
+			isItalicActive = tipTapEditor.isActive('italic');
+			isUnderlineActive = tipTapEditor.isActive('underline');
 		}
 	};
 
 	const toggleBold = () => {
-		editor.chain().focus().toggleBold().run();
+		editor?.getTipTapEditor()?.chain().focus().toggleBold().run();
 	};
 
 	const toggleItalic = () => {
-		editor.chain().focus().toggleItalic().run();
+		editor?.getTipTapEditor()?.chain().focus().toggleItalic().run();
 	};
 
 	const toggleUnderline = () => {
-		editor.chain().focus().toggleUnderline().run();
+		editor?.getTipTapEditor()?.chain().focus().toggleUnderline().run();
 	};
 
 	const undoAction = () => {
-		editor.chain().focus().undo().run();
+		editor?.getTipTapEditor()?.chain().focus().undo().run();
 	};
 
 	const redoAction = () => {
-		editor.chain().focus().redo().run();
+		editor?.getTipTapEditor()?.chain().focus().redo().run();
 	};
 
 	// TODO
 	// It is very strange that this function is in here
 	// It should really be somewhere with the comments extension code
 	const addCommentAction = () => {
-		if (!editor) return;
+		const tipTapEditor = editor?.getTipTapEditor();
+		if (!tipTapEditor) return;
 
-		const { state } = editor;
+		const { state } = tipTapEditor;
 		const { selection } = state;
 
 		if (selection.empty) {
@@ -65,7 +70,7 @@
 
 		const commentId = uuidv4();
 
-		commentsYArray.push([
+		editor.getCommentsYArray().push([
 			{
 				id: commentId,
 				text: '',
@@ -75,12 +80,13 @@
 			}
 		]);
 
-		editor.commands.addComment(commentId);
+		tipTapEditor.commands.addComment(commentId);
 	};
 
-	onMount(() => {
+	onMount(async () => {
 		updateToolbarState();
-		editor.on('selectionUpdate', updateToolbarState);
+		await tick(); // TODO this is also really a hack to wait until the editor is available
+		editor?.getTipTapEditor()?.on('selectionUpdate', updateToolbarState);
 	});
 </script>
 
@@ -103,7 +109,7 @@
 	.editor-toolbar {
 		background-color: #f1f3f4;
 		padding: 4px;
-		border-bottom: 1px solid #e0e0e0;
+		border-radius: 200px;
 	}
 
 	.editor-toolbar button {

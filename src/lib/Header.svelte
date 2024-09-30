@@ -53,31 +53,38 @@
 </script>
 
 <header class="header">
-	<a class="header-left" href="/" >
-		<img src={Logo} alt="Logo" class="logo" />
-		<span class="site-name">Scribe</span>
-	</a>
-	<div class="header-right">
-		{#if $registeredAuthToken && showUsername}
-			<span class="user-info">{username}</span>
-			<button class="logout-button" on:click={logout}>Logout</button>
-		{:else}
-			{#if showAlreadyHaveAccountText}
-				<span class="info-text">Already have an account?</span>
+	<div class="header-top">
+		<slot name="top-left">
+			<a class="header-left" href="/">
+				<img src={Logo} alt="Logo" class="logo" />
+				<span class="site-name">Scribe</span>
+			</a>
+		</slot>
+		<div class="header-right">
+			{#if $registeredAuthToken && showUsername}
+				<span class="user-info">{username}</span>
+				<button class="logout-button" on:click={logout}>Logout</button>
+			{:else}
+				{#if showAlreadyHaveAccountText}
+					<span class="info-text">Already have an account?</span>
+				{/if}
+				{#if showLogin}
+					<a class="login-button" href="/login">Log In</a>
+				{/if}
+				{#if showDontHaveAccountText}
+					<span class="info-text">Don't have an account yet?</span>
+				{/if}
+				{#if showSignUp}
+					<a class="signup-button" href="/signup">Sign Up</a>
+				{/if}
+				{#if showTry}
+					<button class="try-button" on:click={anonymousLogin}>Try</button>
+				{/if}
 			{/if}
-			{#if showLogin}
-				<a class="login-button" href="/login">Log In</a>
-			{/if}
-			{#if showDontHaveAccountText}
-				<span class="info-text">Don't have an account yet?</span>
-			{/if}
-			{#if showSignUp}
-				<a class="signup-button" href="/signup">Sign Up</a>
-			{/if}
-			{#if showTry}
-				<button class="try-button" on:click={anonymousLogin}>Try</button>
-			{/if}
-		{/if}
+		</div>
+	</div>
+	<div class="header-bottom">
+		<slot name="bottom"></slot>
 	</div>
 </header>
 
@@ -87,15 +94,20 @@
 		position: fixed;
 		width: 100%;
 		top: 0;
-		left:0;
+		left: 0;
 		display: flex;
-		justify-content: space-between;
-		align-items: center;
+		flex-direction: column;
 		padding: 10px 20px;
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		z-index: 1000;
 		box-sizing: border-box;
 		backdrop-filter: blur(20px);
+	}
+
+	.header-top {
+		display: flex;
+		justify-content: space-between;
+		width: 100%;
 	}
 
 	.header-left {

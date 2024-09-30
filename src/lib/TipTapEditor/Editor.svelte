@@ -88,14 +88,16 @@
 		provider?.destroy();
 		editor?.destroy();
 	});
+
+	export function getCommentsYArray() {
+		return commentsYArray;
+	}
+	export function getTipTapEditor() {
+		return editor;
+	}
 </script>
 
 <div class="editor-container">
-	<slot name="toolbar">
-		{#if editor}
-			<Toolbar {editor} {commentsYArray} />
-		{/if}
-	</slot>
 	<div class="editor-wrapper">
 		<div class="editor" bind:this={editorContainer}></div>
 		<slot name="comments-panel">

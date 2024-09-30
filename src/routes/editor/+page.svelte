@@ -192,8 +192,8 @@
 		<div class="popup-overlay" on:click={cancelDelete}>
 			<div class="delete-popup" on:click|stopPropagation>
 				<p>Are you sure you want to delete this document?</p>
-				<button class="delete-button" on:click={deleteDocument}>Delete</button>
 				<button on:click={cancelDelete}>Cancel</button>
+				<button class="delete-button" on:click={deleteDocument}>Delete</button>
 			</div>
 		</div>
 	{/if}
