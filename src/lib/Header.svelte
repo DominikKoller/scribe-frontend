@@ -5,13 +5,30 @@
 	import { goto } from '$app/navigation';
 	import Logo from '$lib/assets/Logo.png';
 	import { graphQL } from '$lib/graphQL';
-	import { anonymousAuthToken } from '$lib/stores/auth';
+	import { anonymousAuthToken, authToken } from '$lib/stores/auth';
 
 	let username = '';
 
 	let errorMessage = ''; // do something with this? or make it a button state
 
 	async function anonymousLogin() {
+		try {
+			// first, check if there is already a valid login, anonymous or not
+			if ($authToken) {
+				const query = `
+					query Me {
+    					me {
+        					id
+    					}
+					}`;
+				const result = await graphQL(query);
+				if (result.me.id) {
+					goto('/editor');
+					return;
+				}
+			}
+		} catch {}
+
 		try {
 			const mutation = `
 				mutation AnonymousLogin {
@@ -28,6 +45,7 @@
 				errorMessage = 'Could not login anonymously';
 			}
 		} catch (error) {
+			console.log(error);
 			errorMessage = 'Could not login anonymously';
 		}
 	}
