@@ -116,7 +116,7 @@
 	showLogin={$registeredAuthToken === null}
 	showSignUp={$registeredAuthToken === null}
 	showTry={false}
-	showDontHaveAccountText={true}
+	showDontHaveAccountText={false}
 	showAlreadyHaveAccountText={false}
 	showUsername={$registeredAuthToken !== null}
 />
