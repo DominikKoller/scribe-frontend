@@ -22,6 +22,7 @@
 		underline: 'U̲',
 		undo: '↺',
 		redo: '↻',
+		setRed: '🔴',
 		comment: '💬'
 	};
 
@@ -52,6 +53,10 @@
 
 	const redoAction = () => {
 		editor?.getTipTapEditor()?.chain().focus().redo().run();
+	};
+
+	const setRedAction = () => {
+		editor?.getTipTapEditor()?.chain().focus().setColor('red').run();
 	};
 
 	// TODO
@@ -103,6 +108,7 @@
 	<button on:click={undoAction}>{icons.undo}</button>
 	<button on:click={redoAction}>{icons.redo}</button>
 	<button on:click={addCommentAction}>{icons.comment}</button>
+	<button on:click={setRedAction}>{icons.setRed}</button>
 </div>
 
 <style>

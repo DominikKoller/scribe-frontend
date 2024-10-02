@@ -3,6 +3,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { Editor as TipTapEditor, type Extension } from '@tiptap/core';
 	import StarterKit from '@tiptap/starter-kit';
+	import { Color } from '@tiptap/extension-color';
+	import TextStyle from '@tiptap/extension-text-style';
 
 	import Underline from '@tiptap/extension-underline';
 	import Collaboration from '@tiptap/extension-collaboration';
@@ -14,7 +16,6 @@
 
 	import { CommentExtension } from '$lib/TipTapEditor/CommentExtension';
 	import { createCommentDecorationPlugin } from '$lib/TipTapEditor/CommentDecorationPlugin';
-	import Toolbar from '$lib/TipTapEditor/Toolbar.svelte';
 	import CommentsPanel from '$lib/TipTapEditor/CommentsPanel.svelte';
 
 	import { writable, type Writable, readable, type Readable } from 'svelte/store';
@@ -62,6 +63,8 @@
 					history: false
 				}),
 				Underline,
+				TextStyle,
+				Color,
 				...extensions,
 				Collaboration.configure({
 					document: ydoc
