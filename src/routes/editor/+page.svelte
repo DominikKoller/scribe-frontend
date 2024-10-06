@@ -181,6 +181,11 @@
 							</td>
 						</tr>
 					{/each}
+					{#if $rows.length === 0}
+						<tr class="empty-tr">
+							<td class="empty-td" colspan="4">You don't have any documents yet. Go create some!</td>
+						</tr>
+					{/if}
 				</tbody>
 			</table>
 		</Datatable>
@@ -360,5 +365,17 @@
 	/* See https://vincjo.fr/datatables/examples/basic */
 	.documents-list :global(footer) {
 		border-top: none;
+	}
+
+	.empty-td {
+		color: #aaa;
+		text-align: center;
+		padding: 20px;
+		/* reset hovering styles */
+		cursor: default;
+	}
+	.empty-tr:hover {
+		/* reset hovering styles */
+		background: transparent;
 	}
 </style>
