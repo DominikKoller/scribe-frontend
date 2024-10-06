@@ -67,7 +67,6 @@
 	}
 
 	function handleDocumentNameChange(event: Event) {
-		console.log("name change!");
 		const input = event.target as HTMLInputElement;
 		if (!input) {
 			return;
