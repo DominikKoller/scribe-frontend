@@ -4,7 +4,7 @@
 	import { registeredTokens, anonymousTokens } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import Logo from '$lib/assets/Logo.png';
-	import { anonymousLogin } from './utils/userUtils';
+	import { anonymousLogin, fetchUserData, userData } from './utils/userUtils';
 
 	let username = '';
 
@@ -12,7 +12,10 @@
 
 	async function handleTry() {
 		try {
-			await anonymousLogin();
+			await fetchUserData();
+			if (!$userData) {
+				await anonymousLogin();
+			}
 			goto('/editor');
 		} catch (error) {
 			errorMessage = 'Failed to log in anonymously';
@@ -49,7 +52,9 @@
 		</slot>
 		<div class="header-right">
 			{#if $registeredTokens && showUsername}
-				<span class="user-info">{username}</span>
+				{#if $userData}
+					<span class="user-info">{$userData.email}</span>
+				{/if}
 				<button class="logout-button" on:click={logout}>Logout</button>
 			{:else}
 				{#if showAlreadyHaveAccountText}

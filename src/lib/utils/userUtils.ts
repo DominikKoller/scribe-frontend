@@ -21,6 +21,8 @@ export async function login(email: string, password: string) {
         accessToken: result.login.accessToken,
         refreshToken: result.login.refreshToken
     });
+
+    await fetchUserData();
 }
 
 export async function register(email: string, password: string) {
@@ -42,6 +44,8 @@ export async function register(email: string, password: string) {
         accessToken: result.register.accessToken,
         refreshToken: result.register.refreshToken
     });
+
+    await fetchUserData();
 }
 
 export async function anonymousLogin() {
@@ -81,6 +85,8 @@ export async function anonymousLogin() {
         accessToken: result.anonymousLogin.accessToken,
         refreshToken: result.anonymousLogin.refreshToken
     });
+
+    await fetchUserData();
 }
 
 interface UserData {
@@ -92,6 +98,9 @@ interface UserData {
 export const userData: Writable<UserData | null> = writable(null);
 
 export async function fetchUserData() {
+
+    // TODO low prio only do this if we actually have a token:
+
     const query = `
         query Me {
             me {
