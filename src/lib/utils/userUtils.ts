@@ -13,7 +13,7 @@ export async function login(email: string, password: string) {
 			`;
     const result = await graphQL(mutation, { email, password });
 
-    if(!result.login.accessToken || !result.login.refreshToken) {
+    if (!result.login.accessToken || !result.login.refreshToken) {
         throw new Error('No tokens returned');
     }
 
@@ -25,18 +25,18 @@ export async function login(email: string, password: string) {
     await fetchUserData();
 }
 
-export async function register(email: string, password: string) {
+export async function register(email: string, name: string, password: string) {
     const mutation = `
-				mutation Register($email: String!, $password: String!) {
-					register(email: $email, password: $password) {
+				mutation Register($email: String!, $name: String!, $password: String!) {
+					register(email: $email, name: $name, password: $password) {
 						accessToken
 						refreshToken
 					}
 				}
 			`;
-    const result = await graphQL(mutation, { email, password });
+    const result = await graphQL(mutation, { email, name, password });
 
-    if(!result.register.accessToken || !result.register.refreshToken) {
+    if (!result.register.accessToken || !result.register.refreshToken) {
         throw new Error('No tokens returned');
     }
 
@@ -77,7 +77,7 @@ export async function anonymousLogin() {
         `;
     const result = await graphQL(mutation);
 
-    if(!result.anonymousLogin.accessToken || !result.anonymousLogin.refreshToken) {
+    if (!result.anonymousLogin.accessToken || !result.anonymousLogin.refreshToken) {
         throw new Error('No tokens returned');
     }
 
@@ -86,30 +86,38 @@ export async function anonymousLogin() {
         refreshToken: result.anonymousLogin.refreshToken
     });
 
-    await fetchUserData();
+    await tryFetchUserData();
 }
 
 interface UserData {
     id: string;
     email: string;
+    name: string;
     isAnonymous: boolean;
 }
 
 export const userData: Writable<UserData | null> = writable(null);
 
-export async function fetchUserData() {
+async function fetchUserData() {
+    const query = `
+    query Me {
+        me {
+            id
+            email
+            name
+            isAnonymous
+        }
+    }`;
+    const result = await graphQL(query);
+    userData.set(result.me || null);
+}
+
+export async function tryFetchUserData() {
 
     // TODO low prio only do this if we actually have a token:
-
-    const query = `
-        query Me {
-            me {
-                id
-                email
-                isAnonymous
-            }
-        }`;
-    const result = await graphQL(query);
-    console.log("me result", result);
-    userData.set(result.me || null);
+    try {
+        await fetchUserData();
+    } catch {
+        userData.set(null);
+    }
 }

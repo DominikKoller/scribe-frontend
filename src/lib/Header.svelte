@@ -4,7 +4,7 @@
 	import { registeredTokens, anonymousTokens } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import Logo from '$lib/assets/Logo.png';
-	import { anonymousLogin, fetchUserData, userData } from './utils/userUtils';
+	import { anonymousLogin, tryFetchUserData, userData } from './utils/userUtils';
 
 	let username = '';
 
@@ -12,7 +12,7 @@
 
 	async function handleTry() {
 		try {
-			await fetchUserData();
+			await tryFetchUserData();
 			if (!$userData) {
 				await anonymousLogin();
 			}
@@ -40,6 +40,8 @@
 	export let showDontHaveAccountText = false;
 	export let showAlreadyHaveAccountText = false;
 	export let showUsername = false;
+	export let showLogoutButton = false;
+	export let showGoToEditorButton = false;
 </script>
 
 <header class="header">
@@ -51,10 +53,10 @@
 			</a>
 		</slot>
 		<div class="header-right">
-			{#if $registeredTokens && showUsername}
-				{#if $userData}
-					<span class="user-info">{$userData.email}</span>
-				{/if}
+			{#if $userData && showUsername}
+				<span class="user-info">{$userData.name}</span>
+			{/if}
+			{#if $registeredTokens && showLogoutButton}
 				<button class="logout-button" on:click={logout}>Logout</button>
 			{:else}
 				{#if showAlreadyHaveAccountText}
@@ -71,6 +73,9 @@
 				{/if}
 				{#if showTry}
 					<button class="try-button" on:click={handleTry}>Try</button>
+				{/if}
+				{#if showGoToEditorButton}
+					<a class="go-to-editor-button" href="/editor">Go to Editor</a>
 				{/if}
 			{/if}
 		</div>
@@ -210,6 +215,16 @@
 		cursor: pointer;
 		/* reset button styles */
 		background-color: transparent;
+	}
+
+	.go-to-editor-button {
+		color: white;
+		border: 2px solid white;
+		padding: 6px 12px;
+		border-radius: 6px;
+		text-decoration: none;
+		margin-left: 10px;
+		cursor: pointer;
 	}
 
 	.info-text {

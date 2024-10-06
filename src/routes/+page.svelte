@@ -4,6 +4,7 @@
 	import { graphQL } from '$lib/graphQL';
 	import smallLogo from '$lib/assets/Logo Small.png';
 	import Header from '$lib/Header.svelte';
+	import { registeredTokens } from '$lib/stores/auth';
 
 	let errorMessage = '';
 
@@ -42,12 +43,14 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="page-container" on:click={deselectComment}>
 	<Header
-		showLogin={true}
-		showSignUp={true}
-		showTry={true}
+		showLogin={$registeredTokens == null}
+		showSignUp={$registeredTokens == null}
+		showTry={$registeredTokens == null}
 		showDontHaveAccountText={false}
 		showAlreadyHaveAccountText={false}
-		showUsername={false}
+		showUsername={$registeredTokens !== null}
+		showLogoutButton={false}
+		showGoToEditorButton={$registeredTokens !== null}
 	/>
 	<div class="content-container">
 		<div class="main-texts">

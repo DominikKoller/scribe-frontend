@@ -7,12 +7,13 @@
 	import { register } from '$lib/utils/userUtils';
 
 	let email = '';
+	let name = '';
 	let password = '';
 	let errorMessage = ''; // TODO do something with this?
 
 	async function handleRegister() {
 		try {
-			register(email, password);
+			await register(email, name, password);
 			goto('/editor');
 		} catch (error) {
 			console.log(error);
@@ -45,6 +46,10 @@
 			{/if}
 
 			<form on:submit|preventDefault={handleRegister}>
+				<div class="input-container">
+					<input type="text" bind:value={name} placeholder="Name" required />
+					<label for="name">Name</label>
+				</div>
 				<div class="input-container">
 					<input type="email" bind:value={email} placeholder="Email" required />
 					<label for="email">Email</label>

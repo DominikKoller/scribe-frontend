@@ -7,7 +7,7 @@
 	import { registeredTokens, anonymousTokens } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { graphQL } from '$lib/graphQL';
-	import {  } from '$lib/stores/auth';
+	import {} from '$lib/stores/auth';
 	import Toolbar from '$lib/TipTapEditor/Toolbar.svelte';
 	import BackIcon from '$lib/assets/MaterialSymbolsArrowCircleLeftOutlineRounded.svg';
 	import LLMButtonIcon from '$lib/assets/MaterialSymbolsAutoAwesomeOutline.svg';
@@ -80,7 +80,8 @@
 	showTry={false}
 	showDontHaveAccountText={false}
 	showAlreadyHaveAccountText={false}
-	showUsername={$registeredTokens !== null}
+	showUsername={true}
+	showLogoutButton={$registeredTokens !== null}
 >
 	<div slot="top-left" class="toolbar">
 		<button class="back-button" on:click={handleBack} aria-labelledby="Back">
@@ -112,7 +113,7 @@
 
 <div class="background"></div>
 <div class="editor-page">
-	<Editor {documentId} bind:this={editor} nameStore={documentNameStore} ></Editor>
+	<Editor {documentId} bind:this={editor} nameStore={documentNameStore}></Editor>
 </div>
 
 <style>

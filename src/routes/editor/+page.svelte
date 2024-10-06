@@ -117,7 +117,8 @@
 	showTry={false}
 	showDontHaveAccountText={false}
 	showAlreadyHaveAccountText={false}
-	showUsername={$registeredTokens !== null}
+	showUsername={true}
+	showLogoutButton={$registeredTokens !== null}
 />
 
 <div class="background"></div>

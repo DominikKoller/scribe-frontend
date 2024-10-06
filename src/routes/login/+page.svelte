@@ -1,7 +1,5 @@
 <!-- src/routes/login/+page.svelte -->
 <script lang="ts">
-	import { registeredTokens } from '$lib/stores/auth';
-    import { graphQL } from '$lib/graphQL';
 	import { goto } from '$app/navigation';
     import Header from '$lib/Header.svelte';
 	import { login } from '$lib/utils/userUtils';

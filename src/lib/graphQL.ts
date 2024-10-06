@@ -76,7 +76,7 @@ export const graphQL = async (query: string, variables: any = {}) => {
     if (tokens && tokens.accessToken) {
         headers['Authorization'] = `Bearer ${tokens.accessToken}`;
     }
-
+    
     const response = await axios.post(PUBLIC_APOLLO_URL,
         {
             query,
