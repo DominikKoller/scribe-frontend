@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { authToken } from '$lib/stores/auth';
+	import { registeredTokens, anonymousTokens } from '$lib/stores/auth';
 	import Header from '$lib/Header.svelte';
 	import { graphQL } from '$lib/graphQL';
-	import { registeredAuthToken } from '$lib/stores/auth';
 	import TrashIcon from '$lib/assets/Delete Icon.svg';
 	import DocumentIcon from '$lib/assets/Document Icon.svg';
 	import { DataHandler, Datatable } from '@vincjo/datatables';
@@ -31,7 +30,7 @@
 	}
 
 	onMount(async () => {
-		if (!$authToken) {
+		if (!$registeredTokens && !$anonymousTokens) {
 			goto('/login');
 		} else {
 			await fetchDocumentTitles();
@@ -114,12 +113,12 @@
 </script>
 
 <Header
-	showLogin={$registeredAuthToken === null}
-	showSignUp={$registeredAuthToken === null}
+	showLogin={$registeredTokens === null}
+	showSignUp={$registeredTokens === null}
 	showTry={false}
 	showDontHaveAccountText={false}
 	showAlreadyHaveAccountText={false}
-	showUsername={$registeredAuthToken !== null}
+	showUsername={$registeredTokens !== null}
 />
 
 <div class="background"></div>

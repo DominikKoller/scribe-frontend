@@ -4,10 +4,10 @@
 	import { page } from '$app/stores';
 	import Header from '$lib/Header.svelte';
 	import Editor from '$lib/TipTapEditor/Editor.svelte';
-	import { authToken } from '$lib/stores/auth';
+	import { registeredTokens, anonymousTokens } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { graphQL } from '$lib/graphQL';
-	import { registeredAuthToken } from '$lib/stores/auth';
+	import {  } from '$lib/stores/auth';
 	import Toolbar from '$lib/TipTapEditor/Toolbar.svelte';
 	import BackIcon from '$lib/assets/MaterialSymbolsArrowCircleLeftOutlineRounded.svg';
 	import LLMButtonIcon from '$lib/assets/MaterialSymbolsAutoAwesomeOutline.svg';
@@ -17,7 +17,7 @@
 	let documentId = $page.params.id;
 
 	onMount(async () => {
-		if (!$authToken) {
+		if (!$registeredTokens && !$anonymousTokens) {
 			goto('/login');
 		}
 	});
@@ -39,7 +39,7 @@
 			`;
 			const response = await graphQL(mutation, { id: documentId });
 			console.log(response);
-			// TODO handle response
+			// TODO handle response better
 			/*
 			const data = response.data;
 			if (data.success) {
@@ -76,12 +76,12 @@
 </script>
 
 <Header
-	showLogin={$registeredAuthToken === null}
-	showSignUp={$registeredAuthToken === null}
+	showLogin={$registeredTokens === null}
+	showSignUp={$registeredTokens === null}
 	showTry={false}
 	showDontHaveAccountText={false}
 	showAlreadyHaveAccountText={false}
-	showUsername={$registeredAuthToken !== null}
+	showUsername={$registeredTokens !== null}
 >
 	<div slot="top-left" class="toolbar">
 		<button class="back-button" on:click={handleBack} aria-labelledby="Back">

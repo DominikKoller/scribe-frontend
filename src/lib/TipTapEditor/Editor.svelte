@@ -10,7 +10,7 @@
 	import Collaboration from '@tiptap/extension-collaboration';
 	import { HocuspocusProvider } from '@hocuspocus/provider';
 	import * as Y from 'yjs';
-	import { authToken } from '$lib/stores/auth';
+	import { registeredTokens, anonymousTokens } from '$lib/stores/auth';
 
 	import { PUBLIC_HOCUSPOCUS_URL } from '$env/static/public';
 
@@ -43,7 +43,7 @@
 			url: PUBLIC_HOCUSPOCUS_URL,
 			name: documentId,
 			document: ydoc,
-			token: $authToken
+			token: ($registeredTokens || $anonymousTokens)?.accessToken // refreshing won't be necessary, as the token is only used on connect
 		});
 
 		commentsYArray = ydoc.getArray('comments');

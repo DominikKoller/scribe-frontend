@@ -1,6 +1,6 @@
 <!-- src/routes/login/+page.svelte -->
 <script lang="ts">
-	import { registeredAuthToken } from '$lib/stores/auth';
+	import { registeredTokens } from '$lib/stores/auth';
     import { graphQL } from '$lib/graphQL';
 	import { goto } from '$app/navigation';
     import Header from '$lib/Header.svelte';
@@ -14,12 +14,16 @@
 			const mutation = `
 				mutation Login($email: String!, $password: String!) {
 					login(email: $email, password: $password) {
-						token
+						accessToken
+						refreshToken
 					}
 				}
 			`;
             const result = await graphQL(mutation, { email, password });
-			$registeredAuthToken = result.login.token;
+			$registeredTokens = {
+				accessToken: result.login.accessToken,
+				refreshToken: result.login.refreshToken
+			};
 			goto('/editor');
 		} catch (error) {
 			errorMessage = 'Invalid email or password';

@@ -1,36 +1,58 @@
 // frontend/src/lib/stores/auth.ts
-import { writable, derived } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
 
-const registeredToken = browser ? localStorage.getItem('token') : null;
-const anonymousStoredToken = browser ? localStorage.getItem('anonymousToken') : null;
+export interface AuthTokens {
+	accessToken: string;
+	refreshToken: string;
+}
 
-export const registeredAuthToken = writable<string | null>(registeredToken);
-export const anonymousAuthToken = writable<string | null>(anonymousStoredToken);
+let initialRegisteredTokens: AuthTokens | null = null;
+let initialAnonymousTokens: AuthTokens | null = null;
 
-export const authToken = derived(
-	[registeredAuthToken, anonymousAuthToken],
-	([$registeredAuthToken, $anonymousAuthToken]) => {
-		return $registeredAuthToken || $anonymousAuthToken;
+if (browser) {
+	const registeredAccessToken = localStorage.getItem('registeredAccessToken');
+	const registeredRefreshToken = localStorage.getItem('registeredRefreshToken');
+	if (registeredAccessToken && registeredRefreshToken) {
+		initialRegisteredTokens = {
+			accessToken: registeredAccessToken,
+			refreshToken: registeredRefreshToken,
+		};
 	}
-);
 
-registeredAuthToken.subscribe((token) => {
+	const anonymousAccessToken = localStorage.getItem('anonymousAccessToken');
+	const anonymousRefreshToken = localStorage.getItem('anonymousRefreshToken');
+	if (anonymousAccessToken && anonymousRefreshToken) {
+		initialAnonymousTokens = {
+			accessToken: anonymousAccessToken,
+			refreshToken: anonymousRefreshToken,
+		};
+	}
+}
+
+export const registeredTokens = writable<AuthTokens | null>(initialRegisteredTokens);
+export const anonymousTokens = writable<AuthTokens | null>(initialAnonymousTokens);
+
+registeredTokens.subscribe((tokens) => {
 	if (browser) {
-		if (token) {
-			localStorage.setItem('token', token);
+		if (tokens && tokens.accessToken && tokens.refreshToken) {
+			localStorage.setItem('registeredAccessToken', tokens.accessToken);
+			localStorage.setItem('registeredRefreshToken', tokens.refreshToken);
 		} else {
-			localStorage.removeItem('token');
+			localStorage.removeItem('registeredAccessToken');
+			localStorage.removeItem('registeredRefreshToken');
 		}
 	}
 });
 
-anonymousAuthToken.subscribe((token) => {
+anonymousTokens.subscribe((tokens) => {
 	if (browser) {
-		if (token) {
-			localStorage.setItem('anonymousToken', token);
+		if (tokens && tokens.accessToken && tokens.refreshToken) {
+			localStorage.setItem('anonymousAccessToken', tokens.accessToken);
+			localStorage.setItem('anonymousRefreshToken', tokens.refreshToken);
 		} else {
-			localStorage.removeItem('anonymousToken');
+			localStorage.removeItem('anonymousAccessToken');
+			localStorage.removeItem('anonymousRefreshToken');
 		}
 	}
 });

@@ -1,6 +1,5 @@
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
-	import { authToken, anonymousAuthToken } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { graphQL } from '$lib/graphQL';
 	import smallLogo from '$lib/assets/Logo Small.png';

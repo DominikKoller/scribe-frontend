@@ -1,6 +1,6 @@
 <!-- src/routes/signup/+page.svelte -->
 <script lang="ts">
-	import { registeredAuthToken } from '$lib/stores/auth';
+	import { registeredTokens } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { graphQL } from '$lib/graphQL';
 	import Header from '$lib/Header.svelte';
@@ -14,12 +14,16 @@
 			const mutation = `
 				mutation Register($email: String!, $password: String!) {
 					register(email: $email, password: $password) {
-						token
+						accessToken
+						refreshToken
 					}
 				}
 			`;
 			const result = await graphQL(mutation, { email, password });
-			$registeredAuthToken = result.register.token;
+			$registeredTokens = {
+				accessToken: result.register.accessToken,
+				refreshToken: result.register.refreshToken
+			};
 			goto('/editor');
 		} catch (error) {
 			console.log(error);

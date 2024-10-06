@@ -1,11 +1,10 @@
 <!-- src/lib/Header.svelte -->
 
 <script lang="ts">
-	import { registeredAuthToken } from '$lib/stores/auth';
+	import { registeredTokens, anonymousTokens } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import Logo from '$lib/assets/Logo.png';
 	import { graphQL } from '$lib/graphQL';
-	import { anonymousAuthToken, authToken } from '$lib/stores/auth';
 
 	let username = '';
 
@@ -14,7 +13,7 @@
 	async function anonymousLogin() {
 		try {
 			// first, check if there is already a valid login, anonymous or not
-			if ($authToken) {
+			if ($registeredTokens || $anonymousTokens) {
 				const query = `
 					query Me {
     					me {
@@ -33,13 +32,18 @@
 			const mutation = `
 				mutation AnonymousLogin {
 					anonymousLogin {
-						token
+						accessToken
+						refreshToken
 					}
 				}
 			`;
 			const result = await graphQL(mutation);
-			if (result.anonymousLogin.token) {
-				$anonymousAuthToken = result.anonymousLogin.token;
+			console.log(result);
+			if (result.anonymousLogin.accessToken && result.anonymousLogin.refreshToken) {
+				$anonymousTokens = {
+					accessToken: result.anonymousLogin.accessToken,
+					refreshToken: result.anonymousLogin.refreshToken
+				};
 				goto('/editor');
 			} else {
 				errorMessage = 'Could not login anonymously';
@@ -51,11 +55,11 @@
 	}
 
 	function logout() {
-		$registeredAuthToken = null;
+		$registeredTokens = null;
 		goto('/login');
 	}
 
-	$: if ($registeredAuthToken) {
+	$: if ($registeredTokens) {
 		username = 'User'; // TODO: Fetch the username from the store or API
 	} else {
 		username = '';
@@ -79,7 +83,7 @@
 			</a>
 		</slot>
 		<div class="header-right">
-			{#if $registeredAuthToken && showUsername}
+			{#if $registeredTokens && showUsername}
 				<span class="user-info">{username}</span>
 				<button class="logout-button" on:click={logout}>Logout</button>
 			{:else}
