@@ -4,31 +4,20 @@
     import { graphQL } from '$lib/graphQL';
 	import { goto } from '$app/navigation';
     import Header from '$lib/Header.svelte';
+	import { login } from '$lib/utils/userUtils';
 
 	let email = '';
 	let password = '';
 	let errorMessage = '';
 
-	const login = async () => {
+	async function handleLogin() {
 		try {
-			const mutation = `
-				mutation Login($email: String!, $password: String!) {
-					login(email: $email, password: $password) {
-						accessToken
-						refreshToken
-					}
-				}
-			`;
-            const result = await graphQL(mutation, { email, password });
-			$registeredTokens = {
-				accessToken: result.login.accessToken,
-				refreshToken: result.login.refreshToken
-			};
+			await login(email, password);
 			goto('/editor');
 		} catch (error) {
 			errorMessage = 'Invalid email or password';
 		}
-	};
+	}
 </script>
 
 <!-- my strange solution for a whole page background without setting global css -->
@@ -54,7 +43,7 @@
 				<p class="error-message">{errorMessage}</p>
 			{/if}
 
-			<form on:submit|preventDefault={login}>
+			<form on:submit|preventDefault={handleLogin}>
 				<div class="input-container">
 					<input type="email" bind:value={email} placeholder="Email" required />
 					<label for="email">Email</label>

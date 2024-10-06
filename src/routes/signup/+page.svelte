@@ -4,26 +4,15 @@
 	import { goto } from '$app/navigation';
 	import { graphQL } from '$lib/graphQL';
 	import Header from '$lib/Header.svelte';
+	import { register } from '$lib/utils/userUtils';
 
 	let email = '';
 	let password = '';
 	let errorMessage = ''; // TODO do something with this?
 
-	async function register() {
+	async function handleRegister() {
 		try {
-			const mutation = `
-				mutation Register($email: String!, $password: String!) {
-					register(email: $email, password: $password) {
-						accessToken
-						refreshToken
-					}
-				}
-			`;
-			const result = await graphQL(mutation, { email, password });
-			$registeredTokens = {
-				accessToken: result.register.accessToken,
-				refreshToken: result.register.refreshToken
-			};
+			register(email, password);
 			goto('/editor');
 		} catch (error) {
 			console.log(error);
@@ -55,7 +44,7 @@
 				<p class="error-message">{errorMessage}</p>
 			{/if}
 
-			<form on:submit|preventDefault={register}>
+			<form on:submit|preventDefault={handleRegister}>
 				<div class="input-container">
 					<input type="email" bind:value={email} placeholder="Email" required />
 					<label for="email">Email</label>

@@ -4,52 +4,18 @@
 	import { registeredTokens, anonymousTokens } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import Logo from '$lib/assets/Logo.png';
-	import { graphQL } from '$lib/graphQL';
+	import { anonymousLogin } from './utils/userUtils';
 
 	let username = '';
 
 	let errorMessage = ''; // do something with this? or make it a button state
 
-	async function anonymousLogin() {
+	async function handleTry() {
 		try {
-			// first, check if there is already a valid login, anonymous or not
-			if ($registeredTokens || $anonymousTokens) {
-				const query = `
-					query Me {
-    					me {
-        					id
-    					}
-					}`;
-				const result = await graphQL(query);
-				if (result.me.id) {
-					goto('/editor');
-					return;
-				}
-			}
-		} catch {}
-
-		try {
-			const mutation = `
-				mutation AnonymousLogin {
-					anonymousLogin {
-						accessToken
-						refreshToken
-					}
-				}
-			`;
-			const result = await graphQL(mutation);
-			if (result.anonymousLogin.accessToken && result.anonymousLogin.refreshToken) {
-				$anonymousTokens = {
-					accessToken: result.anonymousLogin.accessToken,
-					refreshToken: result.anonymousLogin.refreshToken
-				};
-				goto('/editor');
-			} else {
-				errorMessage = 'Could not login anonymously';
-			}
+			await anonymousLogin();
+			goto('/editor');
 		} catch (error) {
-			console.log(error);
-			errorMessage = 'Could not login anonymously';
+			errorMessage = 'Failed to log in anonymously';
 		}
 	}
 
@@ -99,7 +65,7 @@
 					<a class="signup-button" href="/signup">Sign Up</a>
 				{/if}
 				{#if showTry}
-					<button class="try-button" on:click={anonymousLogin}>Try</button>
+					<button class="try-button" on:click={handleTry}>Try</button>
 				{/if}
 			{/if}
 		</div>
