@@ -16,12 +16,8 @@ async function refreshIfExpired(tokens: AuthTokens): Promise<AuthTokens> {
     }
 
     if (decodedToken.exp - Date.now() / 1000 > 300) {
-        console.log('Token is still valid for more than 5 minutes. Still valid for: ', decodedToken.exp - Date.now() / 1000);
         return tokens;
     }
-
-    console.log("REFRESHING TOKENS");
-
 
     // if token expires in less than 5 minutes, refresh it
     const refreshTokenMutation = `
@@ -37,14 +33,9 @@ async function refreshIfExpired(tokens: AuthTokens): Promise<AuthTokens> {
         variables: { refreshToken: tokens.refreshToken },
     });
 
-    console.log("REFRSHED");
-
     if (response.data.errors) {
-        console.log("ERROR REFRESHING TOKENS");
         throw new Error(JSON.stringify(response.data.errors));
     }
-
-    console.log("Refreshing response data: ", response.data);
 
     const { accessToken, refreshToken } = response.data.data.refresh;
 
@@ -62,23 +53,17 @@ export const graphQL = async (query: string, variables: any = {}) => {
 
     if (registeredTokensValues && registeredTokensValues.accessToken && registeredTokensValues.refreshToken) {
         tokensStore = registeredTokens;
-        console.log("getting registered tokens");
     } else {
         tokensStore = anonymousTokens;
-        console.log("getting anonymous tokens");
     }
 
     let tokens = get(tokensStore);
-    console.log('Tokens:', tokens);
 
     if (tokens) {
         try {
-            console.log("trying to refresh tokens");
             tokens = await refreshIfExpired(tokens);
-            console.log("successfully refreshed tokens");
             tokensStore.set(tokens);
         } catch (error) {
-            console.log('Error refreshing token. This may mean the server has logged us out / restarted.', error);
             tokensStore.set(null);
         }
     }
@@ -89,10 +74,7 @@ export const graphQL = async (query: string, variables: any = {}) => {
     }
 
     if (tokens && tokens.accessToken) {
-        console.log("setting authorization header");
         headers['Authorization'] = `Bearer ${tokens.accessToken}`;
-    } else {
-        console.log("no tokens found to set authorization header");
     }
 
     const response = await axios.post(PUBLIC_APOLLO_URL,

@@ -38,7 +38,6 @@
 				}
 			`;
 			const response = await graphQL(mutation, { id: documentId });
-			console.log(response);
 			// TODO handle response better
 			/*
 			const data = response.data;

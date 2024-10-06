@@ -38,7 +38,6 @@
 				}
 			`;
 			const result = await graphQL(mutation);
-			console.log(result);
 			if (result.anonymousLogin.accessToken && result.anonymousLogin.refreshToken) {
 				$anonymousTokens = {
 					accessToken: result.anonymousLogin.accessToken,

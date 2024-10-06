@@ -102,7 +102,6 @@
                 `;
 				await graphQL(mutation, { id: documentToDelete.id });
 				documents = documents.filter((document) => document.id !== documentToDelete!.id);
-				console.log("document deleted. new documents list: ", documents);
 				showDeletePopup = false;
 				documentToDelete = null;
 			} catch (error) {
