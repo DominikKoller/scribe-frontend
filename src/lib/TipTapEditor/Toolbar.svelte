@@ -6,6 +6,7 @@
 	import { Array as YArray } from 'yjs';
 	import type { CommentType } from './Types';
 	import Editor from './Editor.svelte';
+	import { userData } from '$lib/utils/userUtils';
 
 	// TODO the way the Editor is passed here & we access its TipTapEditor etc from here is very tightly coupled difficult to understand & hard to maintain
 	// THINK ABOUT THIS COUPLING
@@ -74,7 +75,7 @@
 			{
 				id: commentId,
 				text: '',
-				author: 'User', // Replace with actual user info
+				author: $userData ? $userData.name : 'Unknown User',
 				timestamp: Date.now(),
 				pending: true
 			}
