@@ -92,6 +92,7 @@ export async function anonymousLogin() {
 interface UserData {
     id: string;
     email: string;
+    roles: string[];
     name: string;
     isAnonymous: boolean;
 }
@@ -106,6 +107,7 @@ async function fetchUserData() {
             email
             name
             isAnonymous
+            roles
         }
     }`;
     const result = await graphQL(query);
