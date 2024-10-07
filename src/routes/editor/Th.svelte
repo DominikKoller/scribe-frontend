@@ -6,6 +6,9 @@
 		title: string;
 		createdAt: Date | undefined;
 		updatedAt: Date | undefined;
+		owner: {
+			name: string;
+		};
 	}
 
 	export let handler: DataHandler<Document> | undefined = undefined;

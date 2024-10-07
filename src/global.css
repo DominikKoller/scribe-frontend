@@ -28,6 +28,13 @@ body {
   font-family: 'Sansation', sans-serif;
 }
 
+input {
+  font-family: 'Sansation', sans-serif;
+}
+
+button {
+  font-family: 'Sansation', sans-serif;
+}
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Julius Sans One', sans-serif; /* imported by google fonts in app.html */

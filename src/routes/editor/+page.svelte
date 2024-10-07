@@ -15,6 +15,9 @@
 		title: string;
 		createdAt: Date | undefined;
 		updatedAt: Date | undefined;
+		owner: {
+			name: string;
+		};
 	}
 
 	let documents: Document[] = [];
@@ -46,6 +49,9 @@
                         title
                         createdAt
                         updatedAt
+						owner {
+            				name
+        				}
                     }
                 }
             `;
@@ -150,6 +156,7 @@
 						<Th {handler} orderBy="title">Name</Th>
 						<Th {handler} orderBy="updatedAt">Modified</Th>
 						<Th {handler} orderBy="createdAt">Created</Th>
+						<Th {handler}>Owner</Th>
 						<Th {handler}></Th>
 					</tr>
 				</thead>
@@ -169,6 +176,9 @@
 								{document.createdAt
 									? formatDistanceToNow(document.createdAt, { addSuffix: true })
 									: ''}
+							</td>
+							<td>
+								{document.owner.name}
 							</td>
 							<td>
 								<button

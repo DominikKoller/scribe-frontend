@@ -53,6 +53,7 @@
 			</a>
 		</slot>
 		<div class="header-right">
+			<slot name="top-right"></slot>
 			{#if $userData && showUsername}
 				<span class="user-info">{$userData.name}</span>
 			{/if}
