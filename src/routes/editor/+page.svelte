@@ -117,6 +117,10 @@
 	};
 </script>
 
+<svelte:head>
+  <title>Scribe Documents</title>
+</svelte:head>
+
 <Header
 	showLogin={$registeredTokens === null}
 	showSignUp={$registeredTokens === null}

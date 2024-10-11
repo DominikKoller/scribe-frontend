@@ -22,6 +22,10 @@
 	}
 </script>
 
+<svelte:head>
+  <title>Scribe Signup</title>
+</svelte:head>
+
 <!-- my strange solution for a whole page background without setting global css -->
 <!-- unfortunately when setting whole page css, this is not reliably deleted when navigating to another page -->
 <div class="background"></div>

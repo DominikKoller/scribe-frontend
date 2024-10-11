@@ -88,7 +88,14 @@
 	function toggleSnapshotMenu() {
 		snapshotMenuVisible = !snapshotMenuVisible;
 	}
+
+	let siteTitle = "Scribe Document";
+	$: siteTitle = $documentNameStore || "Scribe Document";
 </script>
+
+<svelte:head>
+  <title>{siteTitle}</title>
+</svelte:head>
 
 <Header
 	showLogin={$registeredTokens === null}

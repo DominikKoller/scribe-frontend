@@ -36,6 +36,11 @@
 	}
 </script>
 
+<!-- even though this is the default name include it since this helps with reloading -->
+<svelte:head>
+  <title>Scribe</title>
+</svelte:head>
+
 <!-- my strange solution for a whole page background without setting global css -->
 <!-- unfortunately when setting whole page css, this is not reliably deleted when navigating to another page -->
 <div class="background"></div>
