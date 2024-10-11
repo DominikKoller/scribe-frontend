@@ -131,7 +131,7 @@
 
 	.editor :global(.tiptap) {
 		outline: none; /* Removes the default blue outline */
-		padding: 20px;
+		padding: 30px;
 		min-height: 400px; /* important rn so that there is enough space to click into the editor */
 	}
 

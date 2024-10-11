@@ -89,8 +89,9 @@
 <style>
 	/* Header styles */
 	.header {
-		position: fixed;
+		position: sticky;
 		width: 100%;
+		min-width: max-content;
 		top: 0;
 		left: 0;
 		display: flex;

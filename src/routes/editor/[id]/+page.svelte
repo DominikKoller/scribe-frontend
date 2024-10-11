@@ -176,12 +176,10 @@
 		z-index: -1;
 	}
 
-	.editor-page {
-		margin-top: 100px; /* Adjust based on header height */
-	}
+
 
 	.toolbar {
-		padding-top: 15px;
+		padding: 8px 0;
 		display: flex;
 		justify-content: start;
 		gap: 10px;
@@ -254,4 +252,5 @@
 		flex-direction: row;
 		align-items: center;
 	}
+
 </style>
